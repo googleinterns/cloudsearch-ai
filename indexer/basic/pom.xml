@@ -11,11 +11,6 @@
     <maven.compiler.source>1.8</maven.compiler.source>
   </properties>
   <dependencies>
-	  <dependency>
-		  <groupId>org.kohsuke</groupId>
-		  <artifactId>github-api</artifactId>
-		  <version>1.93</version>
-	  </dependency>
  	<dependency>
 	      <groupId>com.google.enterprise.cloudsearch</groupId>
 	      <artifactId>google-cloudsearch-indexing-connector-sdk</artifactId>

@@ -22,13 +22,9 @@ import com.google.enterprise.cloudsearch.sdk.indexing.IndexingItemBuilder.FieldO
 import com.google.enterprise.cloudsearch.sdk.indexing.IndexingService;
 import com.google.enterprise.cloudsearch.sdk.indexing.template.*;
 
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
-import org.kohsuke.github.GHContent;
-import org.kohsuke.github.GitHubBuilder;
-
 import javax.activation.FileTypeMap;
 import javax.annotation.Nullable;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -41,94 +37,50 @@ import java.util.regex.Pattern;
 import java.util.stream.IntStream;
 
 public class BasicRepository implements Repository{
-    private int numberOfDocuments;
-    private static GitHub github;
-    private static String githubOrganizations;
     private static Logger log = Logger.getLogger(BasicRepository.class.getName());
-    private static List<GHContent> allcontents  = new ArrayList<GHContent>();
+    private int numberOfDocuments;
+    private static List<String> allFiles = new ArrayList<String>();
     BasicRepository(){
     }
+
+    public void listFilesForFolder(final File folder) {
+        for (final File fileEntry : folder.listFiles()) {
+            if (fileEntry.isDirectory()) {
+                listFilesForFolder(fileEntry);
+            } else {
+                Scanner sc = null;
+                try {
+                    sc = new Scanner(fileEntry);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                String content = "";
+                while(sc.hasNextLine())
+                    content += sc.nextLine();
+                log.info(fileEntry.getName());
+                allFiles.add(content);
+            }
+        }
+    }
+
+
+
     @Override
     public void init(RepositoryContext context) throws StartupException{
-	//Replace with username
-        String user = "";
-	//Replace with Token ID
-        String token = "";
-        githubOrganizations = "madhuparnab/files";
-
-        if (github == null ) {
-            try {
-                github = new GitHubBuilder()
-                        .withPassword(user, token)
-                        .build();
-            } catch (IOException e) {
-                try {
-                    throw new IOException("Unable to connect to GitHub", e);
-                } catch (IOException ioException) {
-                    ioException.printStackTrace();
-                }
-            }
-        }
-
+        final File folder = new File("../../data");
         try {
-            github.getMyself();
-        } catch (IOException e) {
-            try {
-                throw new IOException("Unable to connect to GitHub", e);
-            } catch (IOException ioException) {
-                ioException.printStackTrace();
-            }
+            listFilesForFolder(folder);
         }
-        GHRepository repo = null;
-        try {
-            repo = github.getRepository(githubOrganizations);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        {
-            String sc = repo.getName();
-            log.info(sc);
-        }
-        try {
+        catch(Exception e){
 
-            collectContentRecursively( repo,"/");
-        } catch (IOException e) {
-            e.printStackTrace();
+            log.info("Here");
+
         }
-        numberOfDocuments = allcontents.size();
+        numberOfDocuments = allFiles.size();
     }
 
-    @Override
-    public CheckpointCloseableIterable<ApiOperation> getIds(@Nullable byte[] bytes) throws RepositoryException {
-        return null;
-    }
 
-    @Override
-    public CheckpointCloseableIterable<ApiOperation> getChanges(@Nullable byte[] bytes) throws RepositoryException {
-        return null;
-    }
-    private static void collectContentRecursively(GHRepository repo,
-                                                  String path) throws IOException {
-        log.info("Recurse");
-        List<GHContent> contents = repo.getDirectoryContent(path);
-        for (GHContent contentItem : contents) {
-            log.info("inside");
-            if (contentItem.isDirectory()) {
-                log.info("here");
-                collectContentRecursively(repo, contentItem.getPath());
-            } else {
-                try {
-                    allcontents.add(contentItem);
-                }
-                catch(Exception e){
-                    log.info("Error");
-                }
 
-                String resourceName = new URL(contentItem.getHtmlUrl()).getPath();
-                log.info(() -> String.format("Adding file %s", resourceName));
-            }
-        }
-    }
 
     @Override
     public CheckpointCloseableIterable<ApiOperation> getAllDocs(byte[] checkpoint){
@@ -149,6 +101,45 @@ public class BasicRepository implements Repository{
         return iterator;
     }
 
+
+
+    private ApiOperation buildDocument(int id) throws IOException {
+
+        Acl acl = new Acl.Builder()
+                .setReaders(Collections.singletonList(Acl.getCustomerPrincipal()))
+                .build();
+
+       String cont = allFiles.get(id);
+        ByteArrayContent byteContent = ByteArrayContent.fromString("text/plain", cont);
+       //Set version to timestamp - Change this
+        byte[] version = Longs.toByteArray(System.currentTimeMillis());
+
+        String dummyURL = "www.google.com";
+        Item item = IndexingItemBuilder.fromConfiguration(Integer.toString(id))
+                .setItemType(IndexingItemBuilder.ItemType.CONTENT_ITEM)
+                .setAcl(acl)
+                .setSourceRepositoryUrl(IndexingItemBuilder.FieldOrValue.withValue(dummyURL))
+                .setVersion(version)
+                .build();
+
+       RepositoryDoc doc = new RepositoryDoc.Builder()
+                .setItem(item)
+                .setContent(byteContent, IndexingService.ContentFormat.TEXT)
+                .build();
+
+        return doc;
+    }
+
+    @Override
+    public CheckpointCloseableIterable<ApiOperation> getIds(@Nullable byte[] bytes) throws RepositoryException {
+        return null;
+    }
+
+    @Override
+    public CheckpointCloseableIterable<ApiOperation> getChanges(@Nullable byte[] bytes) throws RepositoryException {
+        return null;
+    }
+
     @Override
     public ApiOperation getDoc(Item item) throws RepositoryException {
         return null;
@@ -162,41 +153,6 @@ public class BasicRepository implements Repository{
     @Override
     public void close() {
 
-    }
-
-    private ApiOperation buildDocument(int id) throws IOException {
-
-        Acl acl = new Acl.Builder()
-                .setReaders(Collections.singletonList(Acl.getCustomerPrincipal()))
-                .build();
-
-        GHContent contentItem = allcontents.get(id);
-        String resourceName = new URL(contentItem.getHtmlUrl()).getPath();
-        String mimeType = FileTypeMap.getDefaultFileTypeMap()
-                .getContentType(contentItem.getName());
-        AbstractInputStreamContent fileContent = new InputStreamContent(
-                mimeType, contentItem.read())
-                .setLength(contentItem.getSize())
-                .setCloseInputStream(true);
-
-
-       //Set version to timestamp - Change this
-        byte[] version = Longs.toByteArray(System.currentTimeMillis());
-
-
-        Item item = IndexingItemBuilder.fromConfiguration(Integer.toString(id))
-                .setItemType(IndexingItemBuilder.ItemType.CONTENT_ITEM)
-                .setAcl(acl)
-                .setSourceRepositoryUrl(IndexingItemBuilder.FieldOrValue.withValue(resourceName))
-                .setVersion(version)
-                .build();
-
-        RepositoryDoc doc = new RepositoryDoc.Builder()
-                .setItem(item)
-                .setContent(fileContent, IndexingService.ContentFormat.RAW)
-                .build();
-
-        return doc;
     }
 
 }
