@@ -24,9 +24,7 @@ import com.google.enterprise.cloudsearch.sdk.indexing.template.*;
 
 import javax.activation.FileTypeMap;
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -43,33 +41,49 @@ public class BasicRepository implements Repository{
     BasicRepository(){
     }
 
-    public void listFilesForFolder(final File folder) {
-        for (final File fileEntry : folder.listFiles()) {
-            if (fileEntry.isDirectory()) {
-                listFilesForFolder(fileEntry);
-            } else {
-                Scanner sc = null;
-                try {
-                    sc = new Scanner(fileEntry);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                String content = "";
-                while(sc.hasNextLine())
-                    content += sc.nextLine();
-                log.info(fileEntry.getName());
-                allFiles.add(content);
-            }
+    public void readAllFiles() throws IOException {
+
+        ConfigValue<List<String>> names = Configuration.getMultiValue(
+                "resources.names",
+                Collections.emptyList(),
+                Configuration.STRING_PARSER);
+
+        List<String> fileNames = names.get();
+
+        if (fileNames.isEmpty()) {
+            log.info("Empty");
+            throw new InvalidConfigurationException(
+                    "No resources configured. Set 'resources.names' in the configuration" +
+                            " to one or more resources names."
+            );
         }
+        log.info("getting config");
+        ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+
+        for(String fileName : fileNames)
+        {
+            log.info(fileName);
+            InputStream is = classloader.getResourceAsStream(fileName);
+            InputStreamReader isReader = new InputStreamReader(is);
+            BufferedReader reader = new BufferedReader(isReader);
+            StringBuffer sb = new StringBuffer();
+            String content;
+            while((content = reader.readLine())!= null){
+                sb.append(content);
+            }
+            log.info(sb.toString());
+            allFiles.add(sb.toString());
+        }
+
     }
 
 
 
     @Override
     public void init(RepositoryContext context) throws StartupException{
-        final File folder = new File("../../data");
+
         try {
-            listFilesForFolder(folder);
+            readAllFiles();
         }
         catch(Exception e){
 
