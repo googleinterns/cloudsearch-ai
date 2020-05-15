@@ -21,6 +21,10 @@ import com.google.enterprise.cloudsearch.sdk.indexing.IndexingItemBuilder;
 import com.google.enterprise.cloudsearch.sdk.indexing.IndexingItemBuilder.FieldOrValue;
 import com.google.enterprise.cloudsearch.sdk.indexing.IndexingService;
 import com.google.enterprise.cloudsearch.sdk.indexing.template.*;
+import com.google.cloud.language.v1.Document;
+import com.google.cloud.language.v1.Document.Type;
+import com.google.cloud.language.v1.LanguageServiceClient;
+import com.google.cloud.language.v1.Sentiment;
 
 import javax.activation.FileTypeMap;
 import javax.annotation.Nullable;
@@ -40,7 +44,23 @@ public class BasicRepository implements Repository{
     private static List<String> allFiles = new ArrayList<String>();
     BasicRepository(){
     }
+    public static void naturalLanguageAPI(String... args) throws Exception {
+        // Instantiates a client
+        log.info("called");
+        try (LanguageServiceClient language = LanguageServiceClient.create()) {
 
+            // The text to analyze
+            String text = "Hello, world!";
+            Document doc = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
+
+            // Detects the sentiment of the text
+            Sentiment sentiment = language.analyzeSentiment(doc).getDocumentSentiment();
+
+            log.info(text);
+            log.info(String.valueOf(sentiment.getScore()));
+            log.info(String.valueOf(sentiment.getMagnitude()));
+        }
+    }
     public void readAllFiles() throws IOException {
 
         ConfigValue<List<String>> names = Configuration.getMultiValue(
@@ -84,6 +104,7 @@ public class BasicRepository implements Repository{
 
         try {
             readAllFiles();
+            naturalLanguageAPI();
         }
         catch(Exception e){
 
