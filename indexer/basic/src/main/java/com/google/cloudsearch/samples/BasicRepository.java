@@ -1,12 +1,8 @@
 package com.google.cloudsearch.samples;
 
-import com.google.api.client.http.AbstractInputStreamContent;
 import com.google.api.client.http.ByteArrayContent;
-import com.google.api.client.http.InputStreamContent;
-import com.google.api.client.util.DateTime;
 import com.google.api.services.cloudsearch.v1.model.Item;
-import com.google.api.services.cloudsearch.v1.model.PushItem;
-import com.google.common.collect.ArrayListMultimap;
+import com.google.cloud.language.v1.*;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
 import com.google.enterprise.cloudsearch.sdk.CheckpointCloseableIterable;
@@ -18,25 +14,20 @@ import com.google.enterprise.cloudsearch.sdk.config.ConfigValue;
 import com.google.enterprise.cloudsearch.sdk.config.Configuration;
 import com.google.enterprise.cloudsearch.sdk.indexing.Acl;
 import com.google.enterprise.cloudsearch.sdk.indexing.IndexingItemBuilder;
-import com.google.enterprise.cloudsearch.sdk.indexing.IndexingItemBuilder.FieldOrValue;
 import com.google.enterprise.cloudsearch.sdk.indexing.IndexingService;
 import com.google.enterprise.cloudsearch.sdk.indexing.template.*;
-import com.google.cloud.language.v1.Document;
 import com.google.cloud.language.v1.Document.Type;
-import com.google.cloud.language.v1.LanguageServiceClient;
-import com.google.cloud.language.v1.Sentiment;
-
-import javax.activation.FileTypeMap;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.io.support.ResourcePatternResolver;
+import java.io.FileWriter;
 import javax.annotation.Nullable;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.IntStream;
+
+import static com.google.cloudsearch.samples.naturalLanguageFunctions.getNaturalLanguageFeatures;
 
 public class BasicRepository implements Repository{
     private static Logger log = Logger.getLogger(BasicRepository.class.getName());
@@ -44,23 +35,22 @@ public class BasicRepository implements Repository{
     private static List<String> allFiles = new ArrayList<String>();
     BasicRepository(){
     }
-    public static void naturalLanguageAPI(String... args) throws Exception {
-        // Instantiates a client
-        log.info("called");
-        try (LanguageServiceClient language = LanguageServiceClient.create()) {
-
-            // The text to analyze
-            String text = "Hello, world!";
-            Document doc = Document.newBuilder().setContent(text).setType(Type.PLAIN_TEXT).build();
-
-            // Detects the sentiment of the text
-            Sentiment sentiment = language.analyzeSentiment(doc).getDocumentSentiment();
-
-            log.info(text);
-            log.info(String.valueOf(sentiment.getScore()));
-            log.info(String.valueOf(sentiment.getMagnitude()));
+    /*
+    public ItemReader<String> reader() {
+        Resource[] resources = null;
+        ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
+        try {
+            resources = patternResolver.getResources("/myfolder/*.csv");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    }
+        MultiResourceItemReader<String> reader = new MultiResourceItemReader<>();
+        reader.setResources(resources);
+        reader.setDelegate(new FlatFileItemReader<>(..));
+        return reader;
+
+        }
+    */
     public void readAllFiles() throws IOException {
 
         ConfigValue<List<String>> names = Configuration.getMultiValue(
@@ -91,7 +81,7 @@ public class BasicRepository implements Repository{
             while((content = reader.readLine())!= null){
                 sb.append(content);
             }
-            log.info(sb.toString());
+            //log.info(sb.toString());
             allFiles.add(sb.toString());
         }
 
@@ -104,7 +94,6 @@ public class BasicRepository implements Repository{
 
         try {
             readAllFiles();
-            naturalLanguageAPI();
         }
         catch(Exception e){
 
@@ -157,10 +146,17 @@ public class BasicRepository implements Repository{
                 .setVersion(version)
                 .build();
 
-       RepositoryDoc doc = new RepositoryDoc.Builder()
-                .setItem(item)
-                .setContent(byteContent, IndexingService.ContentFormat.TEXT)
-                .build();
+        try {
+            Multimap<String, Object> structuredData = getNaturalLanguageFeatures(cont);
+            log.info(String.valueOf(structuredData.get("sentiment")));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        RepositoryDoc doc = new RepositoryDoc.Builder()
+                    .setItem(item)
+                    .setContent(byteContent, IndexingService.ContentFormat.TEXT)
+                    .build();
 
         return doc;
     }
