@@ -4,20 +4,24 @@ package com.google.cloudsearch.ai;
 import java.util.List;
 
 import com.google.common.collect.Multimap;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
     Interface for all Skills.
  */
-public interface AISkill{
+public interface AISkill {
 
     public void setAISkillName(String aiSkillName);
-    public void setOutputMapping(List<Mapping> outputMapping);
-    public void setInputs(JSONObject input);
-    public void setFilter(JSONObject filter);
     public String getAISkillName();
-    public List<Mapping> getOutputMapping();
+
+    public void setOutputMappings(JSONArray outputMapping);
+    public List<OutputMapping> getOutputMappings();
+
+    public void setInputs(JSONObject input);
     public JSONObject getInputs();
+
+    public void setFilter(JSONObject filter);
     public JSONObject getFilter();
 
     /**
@@ -32,8 +36,8 @@ public interface AISkill{
     /**
      * This function executes the corresponding skill and populate structured data for 1 resource at a time.
      *
-     * @param filePath      The filpath of the resource if a local resource or the Cloud Storage URI
+     * @param filePath      The filepath of the resource
      * @return              Return Structured Data for the resource
      */
-    public Multimap<String, Object> executeSkill(String filePath);
+    public Multimap<String, Object> executeSkill(String filePath, Multimap<String, Object> structuredData);
 }

@@ -1,7 +1,5 @@
 package com.google.cloudsearch.ai;
 
-import com.sun.org.apache.bcel.internal.generic.ANEWARRAY;
-import org.checkerframework.checker.units.qual.C;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -12,6 +10,10 @@ import java.util.List;
 public class AISkillSet {
 
     private List<AISkill> skillSet;
+
+    public AISkillSet(JSONObject skillSet){
+        this.parse(skillSet);
+    }
     public void setSkillSet(List<AISkill> skillSet){
 
         this.skillSet = skillSet;
@@ -22,30 +24,36 @@ public class AISkillSet {
     }
     public void parse(JSONObject skillSet){
         List<AISkill> skillList = new ArrayList();
-        JSONArray skills = (JSONArray) skillSet.get("aiSkillSet");
+        JSONArray skills = (JSONArray) skillSet.get(Constants.configSkillSet);
         Iterator<JSONObject> skillIterator = skills.iterator();
 
         while(skillIterator.hasNext()){
             JSONObject nextSkill = (JSONObject) skillIterator.next();
-            String skillName = (String) nextSkill.get("aiSkillName");
-            String[] nameParts = skillName.split(".");
-            if(nameParts[1] == "StandardAISkills")
+            String skillName = (String) nextSkill.get(Constants.configSkillName);
+
+            System.out.println(skillName);
+            String[] nameParts = skillName.split("\\.");
+            System.out.println(nameParts[0] + " " + nameParts[1] + " " + nameParts[2]);
+            if(nameParts[1].equals("StandardAISkills"))
             {
-                switch(nameParts[3]){
+                switch(nameParts[2]){
                     case "EntityExtraction": {
-                        AISkill skill = new standardSkillEntityExtraction();
-                        skill.parse(nextSkill);
+                        System.out.println("Inside");
+                        AISkill skill = new StandardSkillEntityExtraction(nextSkill);
                         skillList.add(skill);
+                        break;
                     }
                     case "SentimentExtraction": {
-                        AISkill skill = new standardSkillSentimentExtraction();
+                        AISkill skill = new StandardSkillSentimentExtraction();
                         skill.parse(nextSkill);
                         skillList.add(skill);
+                        break;
                     }
                     case "CategoryExtraction":{
-                        AISkill skill = new standardSkillCategoryExtraction();
+                        AISkill skill = new StandardSkillCategoryExtraction();
                         skill.parse(nextSkill);
                         skillList.add(skill);
+                        break;
                     }
                     default:{
                         //TODO: Error, No other standard skill supported
@@ -53,7 +61,7 @@ public class AISkillSet {
                 }
             }
             else if(nameParts[1] == "CustomAISkills"){
-                AISkill skill = new customSkill();
+                AISkill skill = new CustomSkill();
                 skill.parse(nextSkill);
                 skillList.add(skill);
             }

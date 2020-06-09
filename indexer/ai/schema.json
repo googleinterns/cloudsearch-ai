@@ -1,0 +1,27 @@
+{
+  "objectDefinitions": [
+    {
+      "name": "Entity",
+      "options": {
+        "displayOptions": {
+          "objectDisplayLabel": "Name"
+        }
+      },
+      "propertyDefinitions": [
+        {
+          "name": "entityname",
+          "isReturnable": true,
+          "isRepeatable": true,
+          "textPropertyOptions": {
+            "operatorOptions": {
+              "operatorName": "name"
+            }
+          },
+          "displayOptions": {
+            "displayLabel": "Entity Name"
+          }
+        }
+      ]
+    }
+  ]
+}

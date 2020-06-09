@@ -1,4 +1,4 @@
-package com.google.cloudsearch.ai;
+package com.google.cloudsearch;
 
 import com.google.enterprise.cloudsearch.sdk.indexing.IndexingApplication;
 import com.google.enterprise.cloudsearch.sdk.indexing.IndexingConnector;

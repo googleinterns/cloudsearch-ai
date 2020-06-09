@@ -1,0 +1,21 @@
+{
+  "aiSkillSet" : [
+    {
+      "aiSkillName" : "CloudSearch.StandardAISkills.EntityExtraction",
+      "inputs" : {
+        "language" : "en",
+        "encoding" : "UTF-8"
+      },
+      "filters" : {
+        "entity.salience.filter" : 0.0,
+        "entity.type.filter" : ["PERSON", "ADDRESS"]
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "Entity.entityname",
+          "outputField" : "entity.name"
+        }
+      ]
+    }
+  ]
+}
