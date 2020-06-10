@@ -20,6 +20,30 @@
           "displayOptions": {
             "displayLabel": "Entity Name"
           }
+        },
+        {
+          "name" : "documentsentiment",
+          "isReturnable" : true,
+          "textPropertyOptions" : {
+            "operatorOptions" : {
+              "operatorName" : "sentiment"
+            }
+          },
+          "displayOptions" : {
+            "displayLabel" : "Document Sentiment"
+          }
+        },{
+          "name" : "documentcategory",
+          "isReturnable" : true,
+          "isRepeatable" : true,
+          "textPropertyOptions" : {
+            "operatorOptions" : {
+              "operatorName" : "category"
+            }
+          },
+          "displayOptions" : {
+            "displayLabel" : "Document Category"
+          }
         }
       ]
     }

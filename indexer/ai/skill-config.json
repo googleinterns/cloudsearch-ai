@@ -4,7 +4,7 @@
       "aiSkillName" : "CloudSearch.StandardAISkills.EntityExtraction",
       "inputs" : {
         "language" : "en",
-        "encoding" : "UTF-8"
+        "encoding" : "UTF8"
       },
       "filters" : {
         "entity.salience.filter" : 0.0,
@@ -14,6 +14,41 @@
         {
           "targetProperty" : "Entity.entityname",
           "outputField" : "entity.name"
+        }
+      ]
+    },
+    {
+      "aiSkillName" : "CloudSearch.StandardAISkills.SentimentExtraction",
+      "inputs" : {
+        "language" : "en",
+        "encoding" : "UTF8"
+      },
+      "filters" : {
+        "sentiment.score.positive" : 0.1,
+        "sentiment.score.negative" : -0.1,
+        "sentiment.magnitude.threshold" : 1.5,
+        "sentiment.magnitude.ignore" : "no"
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "Entity.documentsentiment",
+          "outputField" : "sentiment"
+        }
+      ]
+    },
+    {
+      "aiSkillName" : "CloudSearch.StandardAISkills.CategoryExtraction",
+      "inputs" : {
+        "language" : "en",
+        "encoding" : "UTF8"
+      },
+      "filters" : {
+        "category.confidence" : 0.1
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "Entity.documentcategory",
+          "outputField" : "category"
         }
       ]
     }

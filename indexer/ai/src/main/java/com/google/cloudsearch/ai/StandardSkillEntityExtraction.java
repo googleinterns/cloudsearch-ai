@@ -15,7 +15,7 @@ import java.util.List;
 public class StandardSkillEntityExtraction implements AISkill {
 
     private String aiSkillName = "";
-    private List<OutputMapping> outputMappings = null;
+    private List<OutputMapping> outputMappings = new ArrayList<OutputMapping>();
     private Double salienceFilter = 0.0;
     private List<String> typeFilter = new ArrayList<String>();
     private String inputLanguage = "";

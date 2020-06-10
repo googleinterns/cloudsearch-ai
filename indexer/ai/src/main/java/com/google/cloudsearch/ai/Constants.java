@@ -12,6 +12,18 @@ public class Constants {
     public final static String configOutputField = "outputField";
     public final static String configInputs = "inputs";
 
+    /**
+     * Constants for Category Extraction
+     */
+    public final static String configCategoryConfidence = "category.confidence";
+
+    /**
+     * Constants for Sentiment Extraction Standard Skill
+     */
+    public final static String configSentimentScorePositive = "sentiment.score.positive";
+    public final static String configSentimentScoreNegative = "sentiment.score.negative";
+    public final static String configSentimentMagnitudeIgnore = "sentiment.magnitude.ignore";
+    public final static String configSentimentMagnitudeThreshold = "sentiment.magnitude.threshold";
 
     /**
      * Constants for Entity Extraction Standard Skill

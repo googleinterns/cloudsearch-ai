@@ -140,7 +140,6 @@ public class LocalRepository implements Repository {
 
         Multimap<String, Object> sentimentProperties;
 
-        //structuredData.put("entityname","Madhu");
         log.info("successful");
 
         Item item = IndexingItemBuilder.fromConfiguration(Integer.toString(id))
