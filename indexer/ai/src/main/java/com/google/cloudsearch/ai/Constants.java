@@ -11,7 +11,7 @@ public class Constants {
     public final static String configTargetProperty = "targetProperty";
     public final static String configOutputField = "outputField";
     public final static String configInputs = "inputs";
-
+    public final static String configCloudFunctionURL = "url";
     /**
      * Constants for Category Extraction
      */

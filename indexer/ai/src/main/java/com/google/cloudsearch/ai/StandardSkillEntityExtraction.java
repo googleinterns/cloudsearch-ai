@@ -19,7 +19,7 @@ public class StandardSkillEntityExtraction implements AISkill {
     private Double salienceFilter = 0.0;
     private List<String> typeFilter = new ArrayList<String>();
     private String inputLanguage = "";
-    private String inputEncoding = "UTF8";
+    private EncodingType inputEncoding = EncodingType.NONE;
 
     public StandardSkillEntityExtraction(JSONObject aiSkill)
     {
@@ -40,7 +40,6 @@ public class StandardSkillEntityExtraction implements AISkill {
     public void setOutputMappings(JSONArray outputMapping) {
 
         Iterator<JSONObject> mappingIterator = outputMapping.iterator();
-        this.outputMappings = new ArrayList<OutputMapping>();
         while(mappingIterator.hasNext()){
             JSONObject mappingObject = mappingIterator.next();
             OutputMapping obj = new OutputMapping();
@@ -62,7 +61,20 @@ public class StandardSkillEntityExtraction implements AISkill {
         }
 
         if(input.get("encoding") != null){
-            this.inputEncoding = (String) input.get("encoding");
+            switch((String) input.get("encoding")){
+                case "UTF8" : {
+                                this.inputEncoding = EncodingType.UTF8;
+                                break;
+                }
+                case "UTF16" : {
+                                this.inputEncoding = EncodingType.UTF16;
+                                break;
+                }
+                case "UTF32" : {
+                                this.inputEncoding = EncodingType.UTF32;
+                                break;
+                }
+            }
         }
     }
 
@@ -70,7 +82,7 @@ public class StandardSkillEntityExtraction implements AISkill {
     public JSONObject getInputs() {
 
         JSONObject obj = new JSONObject();
-        obj.put("language", this.inputEncoding);
+        obj.put("language", this.inputLanguage);
         obj.put("encoding", this.inputEncoding);
         return obj;
     }
@@ -94,8 +106,6 @@ public class StandardSkillEntityExtraction implements AISkill {
                 }
             }
         }
-        System.out.println("done");
-
     }
 
     @Override
@@ -138,7 +148,6 @@ public class StandardSkillEntityExtraction implements AISkill {
         this.setOutputMappings((JSONArray) aiSkill.get(Constants.configOutputMappings));
         this.setInputs((JSONObject) aiSkill.get(Constants.configInputs));
         this.setFilter((JSONObject) aiSkill.get(Constants.configFilters));
-        System.out.println("Parsed!");
     }
 
     @Override
@@ -147,22 +156,18 @@ public class StandardSkillEntityExtraction implements AISkill {
         String text = null;
         try {
             text = new String(Files.readAllBytes(Paths.get(filePath)));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        try (LanguageServiceClient language = LanguageServiceClient.create()) {
+            LanguageServiceClient language = LanguageServiceClient.create();
             Document doc;
             if(this.inputLanguage != "") {
                 doc = Document.newBuilder().setContent(text).setLanguage(this.inputLanguage).setType(Document.Type.PLAIN_TEXT).build();
             } else{
                 doc = Document.newBuilder().setContent(text).setType(Document.Type.PLAIN_TEXT).build();
-
             }
             AnalyzeEntitiesRequest request =
                     AnalyzeEntitiesRequest.newBuilder()
                             .setDocument(doc)
-                            .setEncodingType(EncodingType.UTF16)
+                            .setEncodingType(this.inputEncoding)
                             .build();
 
             AnalyzeEntitiesResponse response = language.analyzeEntities(request);

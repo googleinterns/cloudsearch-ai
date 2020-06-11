@@ -17,7 +17,6 @@ class StandardSkillCategoryExtraction implements AISkill {
     private String skillName;
     private List<OutputMapping> outputMappings = new ArrayList<OutputMapping>();
     private String inputLanguage = "";
-    private String inputEncoding = "UTF8";
     private Double categoryConfidence = 0.0;
     @Override
     public void setAISkillName(String aiSkillName) {
@@ -32,7 +31,6 @@ class StandardSkillCategoryExtraction implements AISkill {
     @Override
     public void setOutputMappings(JSONArray outputMapping) {
         Iterator<JSONObject> mappingIterator = outputMapping.iterator();
-        this.outputMappings = new ArrayList<OutputMapping>();
         while(mappingIterator.hasNext()){
             JSONObject mappingObject = mappingIterator.next();
             OutputMapping obj = new OutputMapping();
@@ -52,17 +50,12 @@ class StandardSkillCategoryExtraction implements AISkill {
         if(input.get("language") != null){
             this.inputLanguage = (String) input.get("language");
         }
-
-        if(input.get("encoding") != null){
-            this.inputEncoding = (String) input.get("encoding");
-        }
     }
 
     @Override
     public JSONObject getInputs() {
         JSONObject obj = new JSONObject();
-        obj.put("language", this.inputEncoding);
-        obj.put("encoding", this.inputEncoding);
+        obj.put("language", this.inputLanguage);
         return obj;
     }
 
@@ -95,7 +88,6 @@ class StandardSkillCategoryExtraction implements AISkill {
         this.setOutputMappings((JSONArray) aiSkill.get(Constants.configOutputMappings));
         this.setInputs((JSONObject) aiSkill.get(Constants.configInputs));
         this.setFilter((JSONObject) aiSkill.get(Constants.configFilters));
-        System.out.println("Parsed!");
     }
 
     @Override

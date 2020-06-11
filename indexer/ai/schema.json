@@ -32,7 +32,8 @@
           "displayOptions" : {
             "displayLabel" : "Document Sentiment"
           }
-        },{
+        },
+        {
           "name" : "documentcategory",
           "isReturnable" : true,
           "isRepeatable" : true,
@@ -43,6 +44,18 @@
           },
           "displayOptions" : {
             "displayLabel" : "Document Category"
+          }
+        },
+        {
+         "name" : "cloudfunction",
+          "isReturnable" : true,
+          "textPropertyOptions" : {
+            "operatorOptions" : {
+              "operatorName" : "cloudfunctionname"
+            }
+          },
+          "displayOptions" : {
+            "displayLabel" : "CloudFunction name"
           }
         }
       ]

@@ -16,7 +16,6 @@ public class StandardSkillSentimentExtraction implements AISkill {
     private String skillName;
     private List<OutputMapping> outputMappings = new ArrayList<OutputMapping>();
     private String inputLanguage = "";
-    private String inputEncoding = "UTF8";
     private Double sentimentScorePositive = 0.2;
     private Double sentimentScoreNegative = -0.2;
     private Double sentimentMagnitudeThreshold = 2.0;
@@ -58,17 +57,12 @@ public class StandardSkillSentimentExtraction implements AISkill {
         if(input.get("language") != null){
             this.inputLanguage = (String) input.get("language");
         }
-
-        if(input.get("encoding") != null){
-            this.inputEncoding = (String) input.get("encoding");
-        }
     }
 
     @Override
     public JSONObject getInputs() {
         JSONObject obj = new JSONObject();
-        obj.put("language", this.inputEncoding);
-        obj.put("encoding", this.inputEncoding);
+        obj.put("language", this.inputLanguage);
         return obj;
     }
 

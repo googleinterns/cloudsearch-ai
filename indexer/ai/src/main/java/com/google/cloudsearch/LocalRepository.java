@@ -119,10 +119,10 @@ public class LocalRepository implements Repository {
         Iterator<AISkill> skillIterator = skillList.iterator();
         while(skillIterator.hasNext()){
             AISkill skill = skillIterator.next();
-            log.info(skill.getAISkillName()+"inloop");
+            log.info(skill.getAISkillName());
             structuredData = skill.executeSkill(filepath, structuredData);
         }
-        log.info(String.valueOf(structuredData.get("entityname")));
+        log.info(String.valueOf(structuredData.get("cloudfunction")));
 
         String content = "";
         try {

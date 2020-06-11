@@ -60,10 +60,11 @@ public class AISkillSet {
                     }
                 }
             }
-            else if(nameParts[1] == "CustomAISkills"){
+            else if(nameParts[1].equals("CustomAISkills")){
                 AISkill skill = new CustomSkill();
                 skill.parse(nextSkill);
                 skillList.add(skill);
+                System.out.println("custom");
             }
             else{
                 //TODO: Error
