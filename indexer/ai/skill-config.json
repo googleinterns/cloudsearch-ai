@@ -1,0 +1,67 @@
+{
+  "aiSkillSet" : [
+    {
+      "aiSkillName" : "CloudSearch.StandardAISkills.EntityExtraction",
+      "inputs" : {
+        "language" : "en",
+        "encoding" : "UTF16"
+      },
+      "filters" : {
+        "entity.salience.filter" : 0.0,
+        "entity.type.filter" : ["PERSON", "ADDRESS"]
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "Entity.entityname",
+          "outputField" : "entity.name"
+        }
+      ]
+    },
+    {
+      "aiSkillName" : "CloudSearch.StandardAISkills.SentimentExtraction",
+      "inputs" : {
+        "language" : "en"
+      },
+      "filters" : {
+        "sentiment.score.positive" : 0.1,
+        "sentiment.score.negative" : -0.1,
+        "sentiment.magnitude.threshold" : 1.5,
+        "sentiment.magnitude.ignore" : "no"
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "Entity.documentsentiment",
+          "outputField" : "sentiment"
+        }
+      ]
+    },
+    {
+      "aiSkillName" : "CloudSearch.StandardAISkills.CategoryExtraction",
+      "inputs" : {
+        "language" : "en"
+      },
+      "filters" : {
+        "category.confidence" : 0.1
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "Entity.documentcategory",
+          "outputField" : "category"
+        }
+      ]
+    },
+    {
+      "aiSkillName" : "CloudSearch.CustomAISkills.function-2",
+      "url" : "https://us-central1-basic-276914.cloudfunctions.net/function-2",
+      "inputs" : {
+        "username" : "Madhu"
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "Entity.cloudfunction",
+          "outputField" : "name"
+        }
+      ]
+    }
+  ]
+}
