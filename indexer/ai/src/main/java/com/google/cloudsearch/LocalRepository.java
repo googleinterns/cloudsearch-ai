@@ -2,8 +2,6 @@ package com.google.cloudsearch;
 
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.services.cloudsearch.v1.model.Item;
-import com.google.cloudsearch.ai.AISkill;
-import com.google.cloudsearch.ai.AISkillSet;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
@@ -34,34 +32,40 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 
 public class LocalRepository implements Repository {
 
     private static Logger log = Logger.getLogger(LocalRepository.class.getName());
-    private AISkillSet skillSet;
     private List<String> allFileNames = new ArrayList<String>();
-
+    private JSONObject aiConfig = null;
+    private JSONObject schema = null;
+    private AISkillDriver skillDriver = null;
 
     @Override
     public void init(RepositoryContext repositoryContext) throws RepositoryException {
-        //Read and store file paths from the resource folder
 
+        //Read and store file paths from the resource folder
         ConfigValue<String> folderName = Configuration.getValue("resources.names",null,Configuration.STRING_PARSER);
-        log.info(folderName.get());
-        File[] files = getAllFiles(folderName.get());
+        File[] files = getFileNames(folderName.get());
         for (File f : files) {
-            log.info(f.getPath());
             allFileNames.add(f.getPath());
         }
-        //Parse the JSON
-        ConfigValue<String> AISkillConfig = Configuration.getValue("enrichment.config", null, Configuration.STRING_PARSER);
+        //Get the Skill Configuration
+        ConfigValue<String> aiSkillConfig = Configuration.getValue("enrichment.config", null, Configuration.STRING_PARSER);
         JSONParser parser = new JSONParser();
         try {
-            Object aiConfig = parser.parse(new FileReader(String.valueOf(AISkillConfig.get())));
-            this.skillSet = new AISkillSet((JSONObject) aiConfig);
+            aiConfig = (JSONObject) parser.parse(new FileReader(String.valueOf(aiSkillConfig.get())));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        //Get the schema
+        ConfigValue<String> schemaConfig = Configuration.getValue("enrichment.schema", null, Configuration.STRING_PARSER);
+        try {
+            schema = (JSONObject) parser.parse(new FileReader(String.valueOf(schemaConfig.get())));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ParseException e) {
@@ -81,19 +85,14 @@ public class LocalRepository implements Repository {
 
     @Override
     public CheckpointCloseableIterable<ApiOperation> getAllDocs(@Nullable byte[] bytes) throws RepositoryException {
-        //Iterate through all resources and execute skills for each resource
-        /*
-            Pseudo Code:
 
-            for each resource:
-                for each skill in aiSkillSet:
-                    executeSkill(resourcePath)
-         */
+
+        skillDriver = new AISkillDriver(aiConfig, schema);
 
         Iterator<ApiOperation> allDocs = IntStream.range(0, allFileNames.size())
                 .mapToObj(id -> {
                     try {
-                        return buildDocuments(id);
+                        return buildDocument(id);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -107,27 +106,18 @@ public class LocalRepository implements Repository {
         return iterator;
 
     }
-    private ApiOperation buildDocuments(int id){
-        log.info("inside");
+    private ApiOperation buildDocument(int id){
         Acl acl = new Acl.Builder()
                 .setReaders(Collections.singletonList(Acl.getCustomerPrincipal()))
                 .build();
-        String filepath = this.allFileNames.get(0);
+        String filepath = this.allFileNames.get(id);
 
-        List<AISkill> skillList = (List<AISkill>) skillSet.getSkillSet();
         Multimap<String, Object> structuredData = ArrayListMultimap.create();
-        Iterator<AISkill> skillIterator = skillList.iterator();
-        while(skillIterator.hasNext()){
-            AISkill skill = skillIterator.next();
-            log.info(skill.getAISkillName());
-            structuredData = skill.executeSkill(filepath, structuredData);
-        }
-        log.info(String.valueOf(structuredData.get("cloudfunction")));
+        skillDriver.populateStructuredData(structuredData, filepath);
 
         String content = "";
         try {
             content = new String(Files.readAllBytes(Paths.get(filepath)));
-            log.info(content);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -139,8 +129,6 @@ public class LocalRepository implements Repository {
         String dummyURL = "www.google.com";
 
         Multimap<String, Object> sentimentProperties;
-
-        log.info("successful");
 
         Item item = IndexingItemBuilder.fromConfiguration(Integer.toString(id))
                 .setItemType(IndexingItemBuilder.ItemType.CONTENT_ITEM)
@@ -156,11 +144,10 @@ public class LocalRepository implements Repository {
                 .setContent(byteContent, IndexingService.ContentFormat.TEXT)
                 .build();
 
-
         return doc;
 
     }
-    private static File[] getAllFiles (String folderName) {
+    private static File[] getFileNames(String folderName) {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         URL url = loader.getResource(folderName);
         String path = url.getPath();

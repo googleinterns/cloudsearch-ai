@@ -1,13 +1,10 @@
 package com.google.cloudsearch.ai;
 
-import java.util.List;
-
-class OutputMapping {
+public class OutputMapping {
     private String propertyName;
     private String skillOutputField;
 
-    public void setPropertyNames(String property){
-
+    public void setPropertyName(String property){
         this.propertyName = property;
     }
 
@@ -16,7 +13,6 @@ class OutputMapping {
     }
 
     public void setSkillOutputField(String name){
-
         this.skillOutputField = name;
     }
 

@@ -7,9 +7,7 @@
         "encoding" : "UTF16"
       },
       "filters" : {
-        "entity.salience.filter" : 0.0,
-        "entity.type.filter" : ["PERSON", "ADDRESS"]
-      },
+        "minimumSalience" : 0.0},
       "outputMappings" : [
         {
           "targetProperty" : "Entity.entityname",
@@ -23,10 +21,10 @@
         "language" : "en"
       },
       "filters" : {
-        "sentiment.score.positive" : 0.1,
-        "sentiment.score.negative" : -0.1,
-        "sentiment.magnitude.threshold" : 1.5,
-        "sentiment.magnitude.ignore" : "no"
+        "positiveScore" : 0.1,
+        "negativeScore" : -0.1,
+        "magnitudeThreshold" : 1.5,
+        "ignoreMagnitude" : "no"
       },
       "outputMappings" : [
         {
@@ -41,7 +39,7 @@
         "language" : "en"
       },
       "filters" : {
-        "category.confidence" : 0.1
+        "confidence" : 0.1
       },
       "outputMappings" : [
         {

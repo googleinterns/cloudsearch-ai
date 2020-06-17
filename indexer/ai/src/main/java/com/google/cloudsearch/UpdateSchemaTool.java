@@ -26,13 +26,13 @@ public class UpdateSchemaTool {
         Configuration.initConfig(argv);
 
         ConfigValue<String> sourceId = Configuration.getString("api.sourceId", null);
-        ConfigValue<String> localSchema = Configuration.getString("nlp.schema", null);
+        ConfigValue<String> localSchema = Configuration.getString("enrichment.schema", null);
 
         if (sourceId.get() == null) {
             throw new IllegalArgumentException("Missing api.sourceId value in configuration");
         }
         if (localSchema.get() == null) {
-            throw new IllegalArgumentException("Missing github.schema value in configuration");
+            throw new IllegalArgumentException("Missing enrichment.schema value in configuration");
         }
         updateSchema(sourceId.get(), localSchema.get());
     }
@@ -63,7 +63,6 @@ public class UpdateSchemaTool {
      * @param dataSourceId   Unique ID of the datasource.
      * @param schemaFilePath path to JSON file containing the schema
      */
-    // [START cloud_search_github_tutorial_update_schema]
     static void updateSchema(String dataSourceId, String schemaFilePath) throws Exception {
         CloudSearch cloudSearch = buildAuthorizedClient();
 

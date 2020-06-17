@@ -1,5 +1,7 @@
 package com.google.cloudsearch.ai;
 
+import com.google.cloudsearch.exceptions.InvalidConfigException;
+import com.google.cloudsearch.exceptions.InvalidResponseException;
 import com.google.common.collect.Multimap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -13,45 +15,18 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.logging.Logger;
 
-public class CustomSkill implements AISkill{
+public class CustomSkill extends AISkillBase {
 
-    private String aiSkillName = "";
-    private List<OutputMapping> outputMappings = new ArrayList<OutputMapping>();
     private JSONObject input = new JSONObject();
     private String url = "";
+    private Logger log = Logger.getLogger(StandardSkillCategoryExtraction.class.getName());
 
-    @Override
-    public void setAISkillName(String aiSkillName) {
-        this.aiSkillName = aiSkillName;
+    public CustomSkill(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException{
+
+            this.parse(aiSkill, schema);
     }
-
-    @Override
-    public String getAISkillName() {
-        return this.aiSkillName;
-    }
-
-    @Override
-    public void setOutputMappings(JSONArray outputMapping) {
-
-        Iterator<JSONObject> mappingIterator = outputMapping.iterator();
-        while(mappingIterator.hasNext()){
-            JSONObject mappingObject = mappingIterator.next();
-            OutputMapping obj = new OutputMapping();
-            obj.setPropertyNames((String) mappingObject.get(Constants.configTargetProperty));
-            obj.setSkillOutputField((String) mappingObject.get(Constants.configOutputField));
-            this.outputMappings.add(obj);
-        }
-    }
-
-    @Override
-    public List<OutputMapping> getOutputMappings() {
-        return this.outputMappings;
-    }
-
     @Override
     public void setInputs(JSONObject input) {
         this.input = input;
@@ -66,6 +41,9 @@ public class CustomSkill implements AISkill{
     @Override
     public void setFilter(JSONObject filter) {
         //Filters not required for Custom functions
+        if(filter!=null){
+            log.info("Filters not supported in Custom AI Skills. Any filters specified will be ignored.");
+        }
     }
 
     @Override
@@ -81,16 +59,17 @@ public class CustomSkill implements AISkill{
     public String getURL(){
         return this.url;
     }
+
     @Override
-    public void parse(JSONObject aiSkill) {
-        this.setAISkillName((String) aiSkill.get(Constants.configSkillName));
-        this.setOutputMappings((JSONArray) aiSkill.get(Constants.configOutputMappings));
-        this.setInputs((JSONObject) aiSkill.get(Constants.configInputs));
-        this.setURL((String) aiSkill.get(Constants.configCloudFunctionURL));
+    protected void parse(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException {
+        this.setAISkillName((String) aiSkill.get(Constants.CONFIG_SKILL_NAME));
+        this.setOutputMappings((JSONArray) aiSkill.get(Constants.CONFIG_OUTPUT_MAPPINGS), schema);
+        this.setInputs((JSONObject) aiSkill.get(Constants.CONFIG_INPUTS));
+        this.setURL((String) aiSkill.get(Constants.CONFIG_CLOUD_FUNCTION_URL));
     }
 
     @Override
-    public Multimap<String, Object> executeSkill(String filePath, Multimap<String, Object> structuredData) {
+    public void executeSkill(String filePath, Multimap<String, Object> structuredData){
         String text = null;
         try {
             text = new String(Files.readAllBytes(Paths.get(filePath)));
@@ -120,19 +99,24 @@ public class CustomSkill implements AISkill{
                 while ((responseLine = br.readLine()) != null) {
                     response.append(responseLine.trim());
                 }
-                System.out.println(response.toString());
                 JSONParser parser = new JSONParser();
-                JSONObject res =  (JSONObject) parser.parse(response.toString());
+                JSONObject res = new JSONObject();
+                try{
+                    res =  (JSONObject) parser.parse(response.toString());
+                }
+                catch(ParseException e){
+                    throw new InvalidResponseException("Invalid Response from CloudFunction");
+                }
 
-                for(OutputMapping outputMap : this.outputMappings){
+                for(OutputMapping outputMap : getOutputMappings()){
+                    if(res.get(outputMap.getSkillOutputField()) == null)
+                        continue;
                     structuredData.put(outputMap.getPropertyName().split("\\.")[1], res.get(outputMap.getSkillOutputField()));
                 }
             }
 
-        } catch (IOException | ParseException e) {
+        } catch (IOException | InvalidResponseException e) {
             e.printStackTrace();
         }
-
-        return structuredData;
     }
 }

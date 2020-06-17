@@ -4,33 +4,42 @@ public class Constants {
     /**
      * General Constants for AI Skill Configuration
      */
-    public final static String configSkillSet = "aiSkillSet";
-    public final static String configSkillName = "aiSkillName";
-    public final static String configFilters = "filters";
-    public final static String configOutputMappings = "outputMappings";
-    public final static String configTargetProperty = "targetProperty";
-    public final static String configOutputField = "outputField";
-    public final static String configInputs = "inputs";
-    public final static String configCloudFunctionURL = "url";
+    public final static String CONFIG_SKILL_SET = "aiSkillSet";
+    public final static String CONFIG_SKILL_NAME = "aiSkillName";
+    public final static String CONFIG_ENTITY_SKILL_NAME = "EntityExtraction";
+    public final static String CONFIG_SENTIMENT_SKILL_NAME = "SentimentExtraction";
+    public final static String CONFIG_CATEGORY_SKILL_NAME = "CategoryExtraction";
+    public final static String CONFIG_CUSTOM_SKILL = "CustomAISkills";
+    public final static String CONFIG_STANDARD_SKILL = "StandardAISkills";
+    public final static String CONFIG_FILTERS = "filters";
+    public final static String CONFIG_OUTPUT_MAPPINGS = "outputMappings";
+    public final static String CONFIG_TARGET_PROPERTY = "targetProperty";
+    public final static String CONFIG_OUTPUT_FILED = "outputField";
+    public final static String CONFIG_INPUTS = "inputs";
+    public final static String CONFIG_INPUT_LANGUAGE = "language";
+    public final static String CONFIG_INPUT_ENCODING = "encoding";
+    public final static String CONFIG_CLOUD_FUNCTION_URL = "url";
     /**
      * Constants for Category Extraction
      */
-    public final static String configCategoryConfidence = "category.confidence";
+    public final static String CONFIG_CATEGORY = "category";
+    public final static String CONFIG_CATEGORY_CONFIDENCE = "confidence";
 
     /**
      * Constants for Sentiment Extraction Standard Skill
      */
-    public final static String configSentimentScorePositive = "sentiment.score.positive";
-    public final static String configSentimentScoreNegative = "sentiment.score.negative";
-    public final static String configSentimentMagnitudeIgnore = "sentiment.magnitude.ignore";
-    public final static String configSentimentMagnitudeThreshold = "sentiment.magnitude.threshold";
+    public final static String CONFIG_SENTIMENT = "sentiment";
+    public final static String CONFIG_SENTIMENT_SCORE_POSITIVE = "positiveScore";
+    public final static String CONFIG_SENTIMENT_SCORE_NEGATIVE = "negativeScore";
+    public final static String CONFIG_SENTIMENT_MAGNITUDE_IGNORE = "ignoreMagnitude";
+    public final static String CONFIG_SENTIMENT_MAGNITUDE_THRESHOLD = "magnitudeThreshold";
 
     /**
      * Constants for Entity Extraction Standard Skill
      */
-    public final static String configEntityName = "entity.name";
-    public final static String configEntityTypeFilter = "entity.type.filter";
-    public final static String configEntitySalienceFilter = "entity.salience.filter";
+    public final static String CONFIG_ENTITY_NAME = "entity.name";
+    public final static String CONFIG_ENTITY_TYPE_FILTER = "type";
+    public final static String CONFIG_ENTITY_SALIENCE_FILTER = "minimumSalience";
     /**
      * Constants for different entity types
      */

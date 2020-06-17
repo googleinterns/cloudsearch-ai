@@ -1,6 +1,7 @@
 package com.google.cloudsearch.ai;
 
 import com.google.cloud.language.v1.*;
+import com.google.cloudsearch.exceptions.InvalidConfigException;
 import com.google.common.collect.Multimap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -11,79 +12,64 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 
-public class StandardSkillEntityExtraction implements AISkill {
+public class StandardSkillEntityExtraction extends AISkillBase {
 
-    private String aiSkillName = "";
-    private List<OutputMapping> outputMappings = new ArrayList<OutputMapping>();
     private Double salienceFilter = 0.0;
     private List<String> typeFilter = new ArrayList<String>();
     private String inputLanguage = "";
     private EncodingType inputEncoding = EncodingType.NONE;
+    private Logger log = Logger.getLogger(StandardSkillEntityExtraction.class.getName());
 
-    public StandardSkillEntityExtraction(JSONObject aiSkill)
-    {
-        this.parse(aiSkill);
-    }
 
-    @Override
-    public void setAISkillName(String aiSkillName) {
-        this.aiSkillName = aiSkillName;
-    }
-
-    @Override
-    public String getAISkillName() {
-        return this.aiSkillName;
-    }
-
-    @Override
-    public void setOutputMappings(JSONArray outputMapping) {
-
-        Iterator<JSONObject> mappingIterator = outputMapping.iterator();
-        while(mappingIterator.hasNext()){
-            JSONObject mappingObject = mappingIterator.next();
-            OutputMapping obj = new OutputMapping();
-            obj.setPropertyNames((String) mappingObject.get(Constants.configTargetProperty));
-            obj.setSkillOutputField((String) mappingObject.get(Constants.configOutputField));
-            this.outputMappings.add(obj);
-        }
-    }
-
-    @Override
-    public List<OutputMapping> getOutputMappings() {
-        return this.outputMappings;
+    public StandardSkillEntityExtraction(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException {
+            this.parse(aiSkill, schema);
     }
 
     @Override
     public void setInputs(JSONObject input) {
-        if(input.get("language") != null){
-            this.inputLanguage = (String) input.get("language");
-        }
 
-        if(input.get("encoding") != null){
-            switch((String) input.get("encoding")){
-                case "UTF8" : {
-                                this.inputEncoding = EncodingType.UTF8;
-                                break;
-                }
-                case "UTF16" : {
-                                this.inputEncoding = EncodingType.UTF16;
-                                break;
-                }
-                case "UTF32" : {
-                                this.inputEncoding = EncodingType.UTF32;
-                                break;
+        if(input == null)
+            return;
+
+        Iterator<String> inputIterator = input.keySet().iterator();
+
+        while(inputIterator.hasNext()){
+            String key = (String) inputIterator.next();
+            if(key.equals(Constants.CONFIG_INPUT_LANGUAGE)){
+                this.inputLanguage = (String) input.get(Constants.CONFIG_INPUT_LANGUAGE);
+            }
+            else if(key.equals(Constants.CONFIG_INPUT_ENCODING)){
+                switch((String) input.get(Constants.CONFIG_INPUT_ENCODING)){
+                    case "UTF8" : {
+                        this.inputEncoding = EncodingType.UTF8;
+                        break;
+                    }
+                    case "UTF16" : {
+                        this.inputEncoding = EncodingType.UTF16;
+                        break;
+                    }
+                    case "UTF32" : {
+                        this.inputEncoding = EncodingType.UTF32;
+                        break;
+                    }
                 }
             }
+            else{
+                log.info("Input "+key + " not expected for AISkill Entity Extraction. It will be ignored.");
+
+            }
         }
+
     }
 
     @Override
     public JSONObject getInputs() {
 
         JSONObject obj = new JSONObject();
-        obj.put("language", this.inputLanguage);
-        obj.put("encoding", this.inputEncoding);
+        obj.put(Constants.CONFIG_INPUT_LANGUAGE, this.inputLanguage);
+        obj.put(Constants.CONFIG_INPUT_ENCODING, this.inputEncoding);
         return obj;
     }
 
@@ -93,16 +79,16 @@ public class StandardSkillEntityExtraction implements AISkill {
         while(keys.hasNext()){
             String key = keys.next();
             switch(key){
-                case Constants.configEntityTypeFilter : {
+                case Constants.CONFIG_ENTITY_TYPE_FILTER: {
                     this.typeFilter = (List<String>) filter.get(key);
                     break;
                 }
-                case Constants.configEntitySalienceFilter : {
+                case Constants.CONFIG_ENTITY_SALIENCE_FILTER : {
                     this.salienceFilter = (Double) filter.get(key);
                     break;
                 }
                 default :{
-                    //TODO: Error
+                    log.info("Filter "+key + " not expected for AISkill Entity Extraction. It will be ignored.");
                 }
             }
         }
@@ -117,41 +103,34 @@ public class StandardSkillEntityExtraction implements AISkill {
         return obj;
     }
 
-    private Boolean isSatisfyFilter(Entity.Type type, float salience){
+    private boolean isFilterSatisfied(Entity.Type type, double salience){
 
-        System.out.println(type);
-        Boolean ansSalience = Boolean.TRUE;
-        Boolean ansType= Boolean.TRUE;
+        boolean ansSalience = true;
+        boolean ansType= true;
 
         if(this.salienceFilter > 0.0){
-            if(salience >= this.salienceFilter)
-                ansSalience = Boolean.TRUE;
-            else
-                ansSalience = Boolean.FALSE;
+            if(salience < this.salienceFilter)
+                ansSalience = false;
         }
 
         if( !this.typeFilter.isEmpty() ){
-            if(this.typeFilter.contains(type.toString())){
-                ansType = Boolean.TRUE;
-            }
-            else{
-                ansType = Boolean.FALSE;
-            }
+            if(!this.typeFilter.contains(type.toString()))
+                ansType = false;
         }
         return ansSalience && ansType;
     }
 
     @Override
-    public void parse(JSONObject aiSkill) {
+    protected void parse(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException {
 
-        this.setAISkillName((String) aiSkill.get(Constants.configSkillName));
-        this.setOutputMappings((JSONArray) aiSkill.get(Constants.configOutputMappings));
-        this.setInputs((JSONObject) aiSkill.get(Constants.configInputs));
-        this.setFilter((JSONObject) aiSkill.get(Constants.configFilters));
+        this.setAISkillName((String) aiSkill.get(Constants.CONFIG_SKILL_NAME));
+        this.setOutputMappings((JSONArray) aiSkill.get(Constants.CONFIG_OUTPUT_MAPPINGS), schema);
+        this.setInputs((JSONObject) aiSkill.get(Constants.CONFIG_INPUTS));
+        this.setFilter((JSONObject) aiSkill.get(Constants.CONFIG_FILTERS));
     }
 
     @Override
-    public Multimap<String, Object> executeSkill(String filePath, Multimap<String, Object> structuredData) {
+    public void executeSkill(String filePath, Multimap<String, Object> structuredData) {
 
         String text = null;
         try {
@@ -174,18 +153,19 @@ public class StandardSkillEntityExtraction implements AISkill {
 
             for (Entity entity : response.getEntitiesList()){
 
-                if( !isSatisfyFilter(entity.getType(), entity.getSalience()))
+                if( !isFilterSatisfied(entity.getType(), entity.getSalience()))
                     continue;
-                for(OutputMapping outputMap : this.outputMappings){
+                for(OutputMapping outputMap : getOutputMappings()){
                     String propertyName = outputMap.getPropertyName();
                     String fieldName = outputMap.getSkillOutputField();
                     switch(fieldName){
-                        case Constants.configEntityName:{
+                        case Constants.CONFIG_ENTITY_NAME:{
                             structuredData.put(propertyName.split("\\.")[1],  entity.getName());
                             break;
                         }
                         default:{
-                            //TDOD: Metadata support
+                            log.info("Output Field "+ fieldName + " not supported for AISkill Entity Extraction. It will be ignored.");
+                            //TODO: Metadata support
                         }
                     }
                 }
@@ -194,7 +174,5 @@ public class StandardSkillEntityExtraction implements AISkill {
          } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return structuredData;
     }
 }

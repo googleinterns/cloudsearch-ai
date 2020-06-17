@@ -1,3 +1,9 @@
 target/
 /CloudSearchAI.iml
 .idea/
+checkpoint_queue
+target/
+checkpoint_queue
+CloudSearchAI.iml
+run.sh
+CloudSearchAI.iml
