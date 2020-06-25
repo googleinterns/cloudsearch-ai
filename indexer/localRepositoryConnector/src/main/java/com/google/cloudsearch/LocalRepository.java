@@ -2,6 +2,7 @@ package com.google.cloudsearch;
 
 import com.google.api.client.http.ByteArrayContent;
 import com.google.api.services.cloudsearch.v1.model.Item;
+import com.google.cloudsearch.exceptions.InvalidConfigException;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Longs;
@@ -17,13 +18,9 @@ import com.google.enterprise.cloudsearch.sdk.indexing.template.ApiOperation;
 import com.google.enterprise.cloudsearch.sdk.indexing.template.Repository;
 import com.google.enterprise.cloudsearch.sdk.indexing.template.RepositoryContext;
 import com.google.enterprise.cloudsearch.sdk.indexing.template.RepositoryDoc;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
+import com.google.cloudsearch.ai.AISkillDriver;
 import javax.annotation.Nullable;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -39,8 +36,8 @@ public class LocalRepository implements Repository {
 
     private static Logger log = Logger.getLogger(LocalRepository.class.getName());
     private List<String> allFileNames = new ArrayList<String>();
-    private JSONObject aiConfig = null;
-    private JSONObject schema = null;
+    private String aiConfigName = null;
+    private String schemaName = null;
     private AISkillDriver skillDriver = null;
 
     @Override
@@ -52,24 +49,18 @@ public class LocalRepository implements Repository {
         for (File f : files) {
             allFileNames.add(f.getPath());
         }
-        //Get the Skill Configuration
+        //Get the Skill Configuration name
         ConfigValue<String> aiSkillConfig = Configuration.getValue("enrichment.config", null, Configuration.STRING_PARSER);
-        JSONParser parser = new JSONParser();
-        try {
-            aiConfig = (JSONObject) parser.parse(new FileReader(String.valueOf(aiSkillConfig.get())));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        //Get the schema
+        aiConfigName = aiSkillConfig.get();
+        //Get the schema name
         ConfigValue<String> schemaConfig = Configuration.getValue("enrichment.schema", null, Configuration.STRING_PARSER);
+        schemaName = schemaConfig.get();
+        //Initialize AI Skill Driver
         try {
-            schema = (JSONObject) parser.parse(new FileReader(String.valueOf(schemaConfig.get())));
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
+            AISkillDriver.initialize(aiConfigName, schemaName);
+        }
+        catch(InvalidConfigException e){
+            log.warning("Invalid Config");
         }
     }
 
@@ -85,9 +76,6 @@ public class LocalRepository implements Repository {
 
     @Override
     public CheckpointCloseableIterable<ApiOperation> getAllDocs(@Nullable byte[] bytes) throws RepositoryException {
-
-
-        skillDriver = new AISkillDriver(aiConfig, schema);
 
         Iterator<ApiOperation> allDocs = IntStream.range(0, allFileNames.size())
                 .mapToObj(id -> {
@@ -106,14 +94,14 @@ public class LocalRepository implements Repository {
         return iterator;
 
     }
-    private ApiOperation buildDocument(int id){
+    private ApiOperation buildDocument(int id) {
         Acl acl = new Acl.Builder()
                 .setReaders(Collections.singletonList(Acl.getCustomerPrincipal()))
                 .build();
         String filepath = this.allFileNames.get(id);
 
         Multimap<String, Object> structuredData = ArrayListMultimap.create();
-        skillDriver.populateStructuredData(structuredData, filepath);
+        AISkillDriver.populateStructuredData(structuredData, filepath);
 
         String content = "";
         try {
@@ -127,8 +115,6 @@ public class LocalRepository implements Repository {
         byte[] version = Longs.toByteArray(System.currentTimeMillis());
 
         String dummyURL = "www.google.com";
-
-        Multimap<String, Object> sentimentProperties;
 
         Item item = IndexingItemBuilder.fromConfiguration(Integer.toString(id))
                 .setItemType(IndexingItemBuilder.ItemType.CONTENT_ITEM)
@@ -162,7 +148,6 @@ public class LocalRepository implements Repository {
     public boolean exists(Item item) throws RepositoryException {
         return false;
     }
-
     @Override
     public void close() {
 

@@ -8,7 +8,6 @@ import org.json.simple.JSONObject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Iterator;
 import java.util.logging.Logger;
 
 public class StandardSkillSentimentExtraction extends AISkillBase {
@@ -27,12 +26,7 @@ public class StandardSkillSentimentExtraction extends AISkillBase {
     public void setInputs(JSONObject input) {
         if(input == null)
             return;
-
-        Iterator<String> inputIterator = input.keySet().iterator();
-
-        while(inputIterator.hasNext()){
-            String key = (String) inputIterator.next();
-
+        for(Object key : input.keySet()){
             if(key.equals(Constants.CONFIG_INPUT_LANGUAGE)){
                 this.inputLanguage = (String) input.get("language");
             }
@@ -44,7 +38,6 @@ public class StandardSkillSentimentExtraction extends AISkillBase {
 
     @Override
     public JSONObject getInputs() {
-
         JSONObject obj = new JSONObject();
         obj.put(Constants.CONFIG_INPUT_LANGUAGE, this.inputLanguage);
         return obj;
@@ -52,11 +45,10 @@ public class StandardSkillSentimentExtraction extends AISkillBase {
 
     @Override
     public void setFilter(JSONObject filter) throws InvalidConfigException {
-
-        Iterator<String>  keys = filter.keySet().iterator();
-        while(keys.hasNext()){
-            String key = keys.next();
-            switch(key){
+        if(filter == null)
+            return;
+        for(Object key : filter.keySet()){
+            switch((String)key){
                 case Constants.CONFIG_SENTIMENT_SCORE_POSITIVE: {
                     this.sentimentScorePositive = (double) filter.get(key);
                     break;
@@ -107,38 +99,38 @@ public class StandardSkillSentimentExtraction extends AISkillBase {
     private String getSentiment(Double sentimentScore, Double sentimentMagnitude) {
         if(this.sentimentMagnitudeIgnore.equals("yes")){
             if( sentimentScore >= this.sentimentScorePositive){
-                return "POSITIVE";
+                return Constants.CONFIG_SENTIMENT_POSITIVE;
             }
             else if(sentimentScore <= this.sentimentScoreNegative){
-                return "NEGATIVE";
+                return Constants.CONFIG_SENTIMENT_NEGATIVE;
             }
             else{
-                return "NEUTRAL";
+                return Constants.CONFIG_SENTIMENT_NEUTRAL;
             }
         }
         else{
             if(sentimentMagnitude >= this.sentimentMagnitudeThreshold){
 
                 if( sentimentScore >= this.sentimentScorePositive){
-                    return "POSITIVE";
+                    return Constants.CONFIG_SENTIMENT_POSITIVE;
                 }
                 else if(sentimentScore <= this.sentimentScoreNegative){
-                    return "NEGATIVE";
+                    return Constants.CONFIG_SENTIMENT_NEGATIVE;
                 }
                 else{
-                    return "MIXED";
+                    return Constants.CONFIG_SENTIMENT_MIXED;
                 }
             }
             else{
 
                 if( sentimentScore >= this.sentimentScorePositive){
-                    return "POSITIVE";
+                    return Constants.CONFIG_SENTIMENT_POSITIVE;
                 }
                 else if(sentimentScore <= this.sentimentScoreNegative){
-                    return "NEGATIVE";
+                    return Constants.CONFIG_SENTIMENT_NEGATIVE;
                 }
                 else{
-                    return "NEUTRAL";
+                    return Constants.CONFIG_SENTIMENT_NEUTRAL;
                 }
             }
         }
@@ -154,11 +146,15 @@ public class StandardSkillSentimentExtraction extends AISkillBase {
     }
 
     @Override
-    public void executeSkill(String filePath, Multimap<String, Object> structuredData) {
+    public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
 
         String text = null;
         try {
-            text = new String(Files.readAllBytes(Paths.get(filePath)));
+            if(CloudStorageHandler.isCouldStorageURI(contentOrURI)){
+                text = CloudStorageHandler.getObject(contentOrURI);
+            }
+            else
+                text = new String(Files.readAllBytes(Paths.get(contentOrURI)));
         } catch (IOException e) {
             e.printStackTrace();
         }

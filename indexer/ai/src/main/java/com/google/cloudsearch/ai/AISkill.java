@@ -1,8 +1,6 @@
 package com.google.cloudsearch.ai;
 
-
 import java.util.List;
-
 import com.google.cloudsearch.exceptions.InvalidConfigException;
 import com.google.common.collect.Multimap;
 import org.json.simple.JSONArray;
@@ -28,7 +26,7 @@ public interface AISkill {
     /**
      * This function executes the corresponding skill and populate structured data for 1 resource at a time.
      *
-     * @param filePath      The filepath of the resource
+     * @param contentOrURI      The actual file content or Cloud storage URI
      */
-    public void executeSkill(String filePath, Multimap<String, Object> structuredData);
+    public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData);
 }

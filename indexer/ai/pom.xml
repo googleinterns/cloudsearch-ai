@@ -23,13 +23,21 @@
     </dependencies>
   </dependencyManagement>
 
+
   <dependencies>
   <dependency>
     <groupId>com.google.cloud</groupId>
     <artifactId>google-cloud-language</artifactId>
   </dependency>
 
-  <dependency>
+    <!-- https://mvnrepository.com/artifact/com.google.cloud/google-cloud-storage -->
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-storage</artifactId>
+      <version>1.108.0</version>
+    </dependency>
+
+    <dependency>
     <groupId>com.google.enterprise.cloudsearch</groupId>
     <artifactId>google-cloudsearch-indexing-connector-sdk</artifactId>
     <version>v1-0.0.5</version>

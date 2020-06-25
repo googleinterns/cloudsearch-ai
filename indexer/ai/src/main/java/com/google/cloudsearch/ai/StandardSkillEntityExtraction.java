@@ -10,13 +10,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
 public class StandardSkillEntityExtraction extends AISkillBase {
 
-    private Double salienceFilter = 0.0;
+    private double salienceFilter = 0.0;
     private List<String> typeFilter = new ArrayList<String>();
     private String inputLanguage = "";
     private EncodingType inputEncoding = EncodingType.NONE;
@@ -32,11 +31,7 @@ public class StandardSkillEntityExtraction extends AISkillBase {
 
         if(input == null)
             return;
-
-        Iterator<String> inputIterator = input.keySet().iterator();
-
-        while(inputIterator.hasNext()){
-            String key = (String) inputIterator.next();
+        for(Object key : input.keySet()){
             if(key.equals(Constants.CONFIG_INPUT_LANGUAGE)){
                 this.inputLanguage = (String) input.get(Constants.CONFIG_INPUT_LANGUAGE);
             }
@@ -66,7 +61,6 @@ public class StandardSkillEntityExtraction extends AISkillBase {
 
     @Override
     public JSONObject getInputs() {
-
         JSONObject obj = new JSONObject();
         obj.put(Constants.CONFIG_INPUT_LANGUAGE, this.inputLanguage);
         obj.put(Constants.CONFIG_INPUT_ENCODING, this.inputEncoding);
@@ -75,10 +69,10 @@ public class StandardSkillEntityExtraction extends AISkillBase {
 
     @Override
     public void setFilter(JSONObject filter) {
-        Iterator<String>  keys = filter.keySet().iterator();
-        while(keys.hasNext()){
-            String key = keys.next();
-            switch(key){
+        if(filter == null)
+            return;
+        for(Object key : filter.keySet()){
+            switch((String)key){
                 case Constants.CONFIG_ENTITY_TYPE_FILTER: {
                     this.typeFilter = (List<String>) filter.get(key);
                     break;
@@ -96,7 +90,6 @@ public class StandardSkillEntityExtraction extends AISkillBase {
 
     @Override
     public JSONObject getFilter() {
-
         JSONObject obj = new JSONObject();
         obj.put("type", this.typeFilter);
         obj.put("salience", this.salienceFilter);
@@ -104,17 +97,14 @@ public class StandardSkillEntityExtraction extends AISkillBase {
     }
 
     private boolean isFilterSatisfied(Entity.Type type, double salience){
-
         boolean ansSalience = true;
         boolean ansType= true;
 
-        if(this.salienceFilter > 0.0){
-            if(salience < this.salienceFilter)
+        if(this.salienceFilter > 0.0 && salience < this.salienceFilter){
                 ansSalience = false;
         }
 
-        if( !this.typeFilter.isEmpty() ){
-            if(!this.typeFilter.contains(type.toString()))
+        if( !this.typeFilter.isEmpty() && !this.typeFilter.contains(type.toString())){
                 ansType = false;
         }
         return ansSalience && ansType;
@@ -122,7 +112,6 @@ public class StandardSkillEntityExtraction extends AISkillBase {
 
     @Override
     protected void parse(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException {
-
         this.setAISkillName((String) aiSkill.get(Constants.CONFIG_SKILL_NAME));
         this.setOutputMappings((JSONArray) aiSkill.get(Constants.CONFIG_OUTPUT_MAPPINGS), schema);
         this.setInputs((JSONObject) aiSkill.get(Constants.CONFIG_INPUTS));
@@ -130,11 +119,14 @@ public class StandardSkillEntityExtraction extends AISkillBase {
     }
 
     @Override
-    public void executeSkill(String filePath, Multimap<String, Object> structuredData) {
-
+    public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         String text = null;
         try {
-            text = new String(Files.readAllBytes(Paths.get(filePath)));
+            if(CloudStorageHandler.isCouldStorageURI(contentOrURI)){
+                text = CloudStorageHandler.getObject(contentOrURI);
+            }
+            else
+                text = new String(Files.readAllBytes(Paths.get(contentOrURI)));
 
             LanguageServiceClient language = LanguageServiceClient.create();
             Document doc;

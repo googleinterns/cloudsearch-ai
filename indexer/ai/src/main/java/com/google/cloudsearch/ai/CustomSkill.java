@@ -24,7 +24,6 @@ public class CustomSkill extends AISkillBase {
     private Logger log = Logger.getLogger(StandardSkillCategoryExtraction.class.getName());
 
     public CustomSkill(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException{
-
             this.parse(aiSkill, schema);
     }
     @Override
@@ -34,25 +33,23 @@ public class CustomSkill extends AISkillBase {
 
     @Override
     public JSONObject getInputs() {
-
         return this.input;
     }
 
     @Override
     public void setFilter(JSONObject filter) {
         //Filters not required for Custom functions
-        if(filter!=null){
-            log.info("Filters not supported in Custom AI Skills. Any filters specified will be ignored.");
+        if(filter != null){
+            log.warning("Filters not supported in Custom AI Skills. Any filters specified will be ignored.");
         }
     }
 
     @Override
     public JSONObject getFilter() {
-
         return null;
     }
 
-    public void setURL(String url){
+    public void setURL(String url) {
         this.url = url;
     }
 
@@ -69,11 +66,14 @@ public class CustomSkill extends AISkillBase {
     }
 
     @Override
-    public void executeSkill(String filePath, Multimap<String, Object> structuredData){
+    public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         String text = null;
         try {
-            text = new String(Files.readAllBytes(Paths.get(filePath)));
-
+            if(CloudStorageHandler.isCouldStorageURI(contentOrURI)){
+                text = CloudStorageHandler.getObject(contentOrURI);
+            }
+            else
+                text = new String(Files.readAllBytes(Paths.get(contentOrURI)));
             //Data is the first parameter of the input JSON
             JSONObject obj = getInputs();
             obj.put("data", text);
@@ -82,7 +82,7 @@ public class CustomSkill extends AISkillBase {
             URL cloudFunction = new URL(this.getURL());
             HttpURLConnection connection = (HttpURLConnection) cloudFunction.openConnection();
             connection.setRequestMethod("POST");
-            connection.setRequestProperty("content-type", "application/json");
+            connection.setRequestProperty("contentOrURI-type", "application/json");
             connection.setRequestProperty("Accept", "application/json");
             connection.setDoOutput(true);
 

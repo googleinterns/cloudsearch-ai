@@ -9,7 +9,6 @@ import org.json.simple.JSONObject;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Iterator;
 import java.util.logging.Logger;
 
 class StandardSkillCategoryExtraction extends AISkillBase {
@@ -25,14 +24,9 @@ class StandardSkillCategoryExtraction extends AISkillBase {
 
     @Override
     public void setInputs(JSONObject input) {
-
         if(input == null)
             return;
-
-        Iterator<String> inputIterator = input.keySet().iterator();
-
-        while(inputIterator.hasNext()){
-            String key = (String) inputIterator.next();
+        for(Object key : input.keySet()){
             if(key.equals(Constants.CONFIG_INPUT_LANGUAGE)){
                 this.inputLanguage = (String) input.get(key);
             }
@@ -40,7 +34,6 @@ class StandardSkillCategoryExtraction extends AISkillBase {
                 log.info("Input "+key + " not expected for AISkill Category Extraction. It will be ignored.");
             }
         }
-
     }
 
     @Override
@@ -52,16 +45,10 @@ class StandardSkillCategoryExtraction extends AISkillBase {
 
     @Override
     public void setFilter(JSONObject filter) {
-        
         if(filter == null)
             return;
-
-        Iterator<String> filterIterator = filter.keySet().iterator();
-
         // Only one filter supported
-        while (filterIterator.hasNext()) {
-
-            String key = filterIterator.next();
+        for(Object key : filter.keySet()) {
             if (key.equals(Constants.CONFIG_CATEGORY_CONFIDENCE))
                 this.categoryConfidence = (double) filter.get(Constants.CONFIG_CATEGORY_CONFIDENCE);
             else{
@@ -86,7 +73,6 @@ class StandardSkillCategoryExtraction extends AISkillBase {
 
     @Override
     protected void parse(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException {
-
         this.setAISkillName((String) aiSkill.get(Constants.CONFIG_SKILL_NAME));
         this.setOutputMappings((JSONArray) aiSkill.get(Constants.CONFIG_OUTPUT_MAPPINGS), schema);
         this.setInputs((JSONObject) aiSkill.get(Constants.CONFIG_INPUTS));
@@ -94,10 +80,14 @@ class StandardSkillCategoryExtraction extends AISkillBase {
     }
 
     @Override
-    public void executeSkill(String filePath, Multimap<String, Object> structuredData) {
+    public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         String text = null;
         try {
-            text = new String(Files.readAllBytes(Paths.get(filePath)));
+            if(CloudStorageHandler.isCouldStorageURI(contentOrURI)){
+                text = CloudStorageHandler.getObject(contentOrURI);
+            }
+            else
+                text = new String(Files.readAllBytes(Paths.get(contentOrURI)));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -121,7 +111,7 @@ class StandardSkillCategoryExtraction extends AISkillBase {
                     case Constants.CONFIG_CATEGORY:{
                         for (ClassificationCategory category : response.getCategoriesList()) {
                             if(isSatisfyFilter((double)category.getConfidence())){
-                                structuredData.put(outputMap.getPropertyName().split("\\.")[1],  category.getName());
+                                structuredData.put(propertyName.split("\\.")[1],  category.getName());
                             }
                         }
                         break;

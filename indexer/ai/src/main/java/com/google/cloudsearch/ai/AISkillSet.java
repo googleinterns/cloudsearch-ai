@@ -28,10 +28,9 @@ public class AISkillSet {
     public void parse(JSONObject skillSet, JSONObject schema) throws InvalidConfigException {
         List<AISkill> skillList = new ArrayList();
         JSONArray skills = (JSONArray) skillSet.get(Constants.CONFIG_SKILL_SET);
-        Iterator<JSONObject> skillIterator = skills.iterator();
         log.info("Skills specified :");
-        while(skillIterator.hasNext()){
-            JSONObject nextSkill = (JSONObject) skillIterator.next();
+        for(Object skillObj : skills){
+            JSONObject nextSkill = (JSONObject) skillObj;
             String skillName;
             String[] nameParts;
             try {
