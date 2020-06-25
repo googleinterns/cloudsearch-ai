@@ -1,0 +1,6 @@
+target/
+/CloudSearchAI.iml
+.idea/
+checkpoint_queue
+CloudSearchAI.iml
+/ai.iml
