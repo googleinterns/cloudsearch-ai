@@ -15,7 +15,7 @@ public interface AISkill {
     public String getAISkillName();
 
     public void setOutputMappings(JSONArray outputMapping, JSONObject schema) throws InvalidConfigException;
-    public List<OutputMapping> getOutputMappings();
+    public List<OutputMapping> getOutputMappingByObject(String objectName);
 
     public void setInputs(JSONObject input);
     public JSONObject getInputs();
@@ -28,5 +28,5 @@ public interface AISkill {
      *
      * @param contentOrURI      The actual file content or Cloud storage URI
      */
-    public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData);
+    public void executeSkill(String objectName, String contentOrURI, Multimap<String, Object> structuredData);
 }

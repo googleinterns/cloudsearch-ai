@@ -11,7 +11,7 @@ import java.util.*;
 public abstract class AISkillBase implements AISkill {
 
     private String aiSkillName = "";
-    private List<OutputMapping> outputMappings = new ArrayList<OutputMapping>();
+    private Map<String, List<OutputMapping>> outputMappings = new HashMap<>();
     private Map<String, Boolean> schemaInfo = new HashMap<String, Boolean>();
     private Boolean isSchemaInfoStored = false;
 
@@ -84,12 +84,20 @@ public abstract class AISkillBase implements AISkill {
             JSONObject mappingObject = (JSONObject) objMap;
             OutputMapping obj = new OutputMapping();
             if(isValid((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY), schema))
-                obj.setPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY));
+                obj.setObjectAndPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY));
             else
                 throw new InvalidConfigException("Invalid Object or Property Name");
 
             obj.setSkillOutputField((String) mappingObject.get(Constants.CONFIG_OUTPUT_FILED));
-            this.outputMappings.add(obj);
+
+            String objectName = obj.getObjectName();
+            if(this.outputMappings.containsKey(objectName))
+                this.outputMappings.get(objectName).add(obj);
+            else {
+                List<OutputMapping> mapList  = new ArrayList<>();
+                mapList.add(obj);
+                this.outputMappings.put(objectName, mapList);
+            }
         }
     }
 
@@ -97,8 +105,8 @@ public abstract class AISkillBase implements AISkill {
      * @return  Returns the List of Output Mappings
      */
     @Override
-    public List<OutputMapping> getOutputMappings() {
-        return this.outputMappings;
+    public List<OutputMapping> getOutputMappingByObject(String objectName) {
+        return this.outputMappings.get(objectName);
     }
 
     /**
