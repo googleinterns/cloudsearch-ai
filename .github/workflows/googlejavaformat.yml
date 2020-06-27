@@ -2,9 +2,8 @@ name: Google Java Format
 
 on:
   push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+    branches:
+      - master
 
 jobs:
 
@@ -19,4 +18,3 @@ jobs:
       - uses: axel-op/googlejavaformat-action@v3
         with:
           args: "--replace"
-          skipCommit: true
