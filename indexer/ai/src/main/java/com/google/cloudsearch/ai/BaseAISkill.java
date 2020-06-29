@@ -20,14 +20,14 @@ public abstract class BaseAISkill implements AISkill {
      * @param schema    CloudSearch schema
      */
     private void storeSchemaInfo(JSONObject schema){
-        JSONArray schemaObjects = (JSONArray) schema.get("objectDefinitions");
+        JSONArray schemaObjects = (JSONArray) schema.get(Constants.CONFIG_SCHEMA_OBJECT_DEFINITIONS);
         for(Object schemaObj : schemaObjects){
             JSONObject obj = (JSONObject) schemaObj;
-            String objName = (String) obj.get("name");
-            JSONArray propertyDefinitions = (JSONArray) obj.get("propertyDefinitions");
+            String objName = (String) obj.get(Constants.CONFIG_SCHEMA_NAME);
+            JSONArray propertyDefinitions = (JSONArray) obj.get(Constants.CONFIG_SCHEMA_PROPERTY_DEFINITIONS);
             for(Object propertyObj : propertyDefinitions){
                 JSONObject property = (JSONObject) propertyObj;
-                String propertyName = (String) property.get("name");
+                String propertyName = (String) property.get(Constants.CONFIG_SCHEMA_NAME);
                 schemaInfo.put(objName+"."+propertyName, true);
             }
         }

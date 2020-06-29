@@ -23,13 +23,12 @@ public interface AISkill {
     public JSONObject getInputs();
     public void parseInputs(JSONObject input) throws InvalidConfigException;
 
-
     public void setFilter(JSONObject filter);
     public JSONObject getFilter();
     public void parseFilter(JSONObject filter) throws InvalidConfigException;
 
     /**
-     * This function executes the corresponding skill and populate structured data for 1 resource at a time.
+     * This function executes the corresponding skill and populates structured data for 1 resource at a time.
      *
      * @param contentOrURI      The actual file content or Cloud storage URI
      */

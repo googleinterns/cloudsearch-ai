@@ -2,6 +2,13 @@ package com.google.cloudsearch.ai;
 
 public class Constants {
     /**
+     * CloudSearch Schema Related Constants
+     */
+    public final static String CONFIG_SCHEMA_OBJECT_DEFINITIONS = "objectDefinitions";
+    public final static String CONFIG_SCHEMA_PROPERTY_DEFINITIONS = "propertyDefinitions";
+    public final static String CONFIG_SCHEMA_NAME = "name";
+
+    /**
      * General Constants for AI Skill Configuration
      */
     public final static String CONFIG_SKILL_SET = "aiSkillSet";
