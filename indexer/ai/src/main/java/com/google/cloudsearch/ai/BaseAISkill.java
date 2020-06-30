@@ -41,12 +41,15 @@ public abstract class BaseAISkill implements AISkill {
      * @return
      */
     private boolean isValidPropertyName(String propertyName, JSONObject schema){
-        if(isSchemaInfoStored == false)
+        if(isSchemaInfoStored == false){
             this.storeSchemaInfo(schema);
-        if(this.schemaInfo.get(propertyName) == null)
+        }
+        if(this.schemaInfo.get(propertyName) == null){
             return false;
-        else
+        }
+        else {
             return true;
+        }
     }
 
     /**
@@ -70,10 +73,12 @@ public abstract class BaseAISkill implements AISkill {
      */
     @Override
     public void parseAISkillName(String aiSkillName) throws InvalidConfigException {
-        if(aiSkillName == null || aiSkillName.equals(""))
+        if (aiSkillName == null || aiSkillName.equals("")) {
             throw new InvalidConfigException("No skill name specified.");
-        else
+        }
+        else{
             setAISkillName(aiSkillName);
+        }
     }
 
     /**
@@ -101,18 +106,19 @@ public abstract class BaseAISkill implements AISkill {
      */
     @Override
     public void parseOutputMappings(JSONArray outputMapping, JSONObject schema) throws InvalidConfigException {
-        if(outputMapping == null)
+        if (outputMapping == null) {
             throw new InvalidConfigException("Output Mapping not specified.");
-
+        }
         List<OutputMapping> outputMappingList = new ArrayList<OutputMapping>();
         for(Object objMap : outputMapping){
             JSONObject mappingObject = (JSONObject) objMap;
             OutputMapping obj = new OutputMapping();
-            if(isValidPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY), schema))
+            if (isValidPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY), schema)) {
                 obj.setPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY));
-            else
+            }
+            else {
                 throw new InvalidConfigException("Invalid Object or Property Name");
-
+            }
             obj.setSkillOutputField((String) mappingObject.get(Constants.CONFIG_OUTPUT_FILED));
             outputMappingList.add(obj);
         }
