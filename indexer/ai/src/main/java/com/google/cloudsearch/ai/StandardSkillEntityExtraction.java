@@ -48,17 +48,17 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
             }
             else if (key.equals(Constants.CONFIG_INPUT_ENCODING)) {
                 switch ((String) input.get(Constants.CONFIG_INPUT_ENCODING)) {
-                    case "UTF8":
+                    case Constants.CONFIG_ENTITY_ENCODING_UTF8:
                         {
                           this.inputEncoding = EncodingType.UTF8;
                           break;
                         }
-                    case "UTF16":
+                    case Constants.CONFIG_ENTITY_ENCODING_UTF16:
                         {
                           this.inputEncoding = EncodingType.UTF16;
                           break;
                         }
-                    case "UTF32":
+                    case Constants.CONFIG_ENTITY_ENCODING_UTF32:
                         {
                           this.inputEncoding = EncodingType.UTF32;
                           break;
@@ -199,23 +199,7 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try {
             LanguageServiceClient language = LanguageServiceClient.create();
-            Document doc;
-            if(CloudStorageHandler.isCouldStorageURI(contentOrURI)){
-                if(this.inputLanguage != "") {
-                    doc = Document.newBuilder().setGcsContentUri(contentOrURI).setLanguage(this.inputLanguage).setType(Document.Type.PLAIN_TEXT).build();
-                }
-                else {
-                    doc = Document.newBuilder().setGcsContentUri(contentOrURI).setType(Document.Type.PLAIN_TEXT).build();
-                }
-            }
-            else{
-                if(this.inputLanguage != "") {
-                    doc = Document.newBuilder().setContent(contentOrURI).setLanguage(this.inputLanguage).setType(Document.Type.PLAIN_TEXT).build();
-                }
-                else {
-                    doc = Document.newBuilder().setContent(contentOrURI).setType(Document.Type.PLAIN_TEXT).build();
-                }
-            }
+            Document doc = buildNLDocument(language, this.inputLanguage, contentOrURI);
 
             AnalyzeEntitiesRequest request =
                     AnalyzeEntitiesRequest.newBuilder()
@@ -224,18 +208,18 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
                             .build();
             AnalyzeEntitiesResponse response = language.analyzeEntities(request);
 
-            for (Entity entity : response.getEntitiesList()){
+            for (Entity entity : response.getEntitiesList()) {
                 if( !isFilterSatisfied(entity.getType(), entity.getSalience()))
                     continue;
-                for(OutputMapping outputMap : getOutputMappings()){
+                for(OutputMapping outputMap : getOutputMappings()) {
                     String propertyName = outputMap.getPropertyName();
                     String fieldName = outputMap.getSkillOutputField();
-                    switch(fieldName){
-                        case Constants.CONFIG_ENTITY_NAME:{
+                    switch(fieldName) {
+                        case Constants.CONFIG_ENTITY_NAME: {
                             structuredData.put(propertyName.split("\\.")[1],  entity.getName());
                             break;
                         }
-                        default:{
+                        default: {
                             log.info("Output Field "+ fieldName + " not supported for AISkill Entity Extraction. It will be ignored.");
                             //TODO: Metadata support
                         }

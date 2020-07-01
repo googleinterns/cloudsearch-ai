@@ -1,7 +1,7 @@
 package com.google.cloudsearch.ai;
 
 /**
- * OutputMapping class stores the mapping between schema properties and skill output fields.
+ * OutputMapping class handles the mapping between schema properties and skill output fields.
  */
 public class OutputMapping {
     private String propertyName;
