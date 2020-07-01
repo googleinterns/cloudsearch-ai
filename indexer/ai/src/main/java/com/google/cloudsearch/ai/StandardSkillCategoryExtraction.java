@@ -62,14 +62,14 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
      */
     @Override
     public void parseInputs(JSONObject input) throws InvalidConfigException {
-        if(input == null){
+        if(input == null) {
             return;
         }
-        for(Object key : input.keySet()){
-            if(key.equals(Constants.CONFIG_INPUT_LANGUAGE)){
+        for(Object key : input.keySet()) {
+            if(key.equals(Constants.CONFIG_INPUT_LANGUAGE)) {
                 setInputs(input);
             }
-            else{
+            else {
                 throw new InvalidConfigException("Input " + key + " not expected for AISkill Category Extraction.");
             }
         }
@@ -102,13 +102,13 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
    */
   @Override
   public void parseFilter(JSONObject filter) throws InvalidConfigException {
-        if(filter == null){
+        if(filter == null) {
             return;
         }
         for(Object key : filter.keySet()) {
             if (key.equals(Constants.CONFIG_CATEGORY_CONFIDENCE))
                 setFilter(filter);
-            else{
+            else {
                 throw new InvalidConfigException("Filter " + key + " is not supported for AISkill Category Extraction.");
             }
         }
@@ -119,7 +119,7 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
      * @param confidence    Confidence score obtained for each category returned by the API
      * @return              Returns true if the condition is satisfied, else returns false.
      */
-    private boolean isSatisfyFilter(double confidence){
+    private boolean isFilterSatisfied(double confidence) {
         if(confidence >= this.categoryConfidence)
             return true;
         else
@@ -148,40 +148,24 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try (LanguageServiceClient language = LanguageServiceClient.create()) {
-            Document doc;
-            if(CloudStorageHandler.isCouldStorageURI(contentOrURI)){
-                if(this.inputLanguage != "") {
-                doc = Document.newBuilder().setGcsContentUri(contentOrURI).setLanguage(this.inputLanguage).setType(Document.Type.PLAIN_TEXT).build();
-                }
-                else {
-                doc = Document.newBuilder().setGcsContentUri(contentOrURI).setType(Document.Type.PLAIN_TEXT).build();
-                }
-            }
-            else{
-                if(this.inputLanguage != "") {
-                doc = Document.newBuilder().setContent(contentOrURI).setLanguage(this.inputLanguage).setType(Document.Type.PLAIN_TEXT).build();
-                }
-            else {
-                doc = Document.newBuilder().setContent(contentOrURI).setType(Document.Type.PLAIN_TEXT).build();
-                }
-            }
+            Document doc = buildNLDocument(language, this.inputLanguage, contentOrURI);
 
             ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(doc).build();
             ClassifyTextResponse response = language.classifyText(request);
 
-            for(OutputMapping outputMap : getOutputMappings()){
+            for(OutputMapping outputMap : getOutputMappings()) {
                 String propertyName = outputMap.getPropertyName();
                 String fieldName = outputMap.getSkillOutputField();
-                switch(fieldName){
-                    case Constants.CONFIG_CATEGORY:{
+                switch(fieldName) {
+                    case Constants.CONFIG_CATEGORY: {
                         for (ClassificationCategory category : response.getCategoriesList()) {
-                            if(isSatisfyFilter((double)category.getConfidence())){
+                            if(isFilterSatisfied((double)category.getConfidence())) {
                                 structuredData.put(propertyName.split("\\.")[1],  category.getName());
                             }
                         }
                         break;
                     }
-                    default:{
+                    default: {
                         log.info("Output Field "+ fieldName + " not supported for AISkill Category Extraction. It will be ignored.");
                     }
                 }

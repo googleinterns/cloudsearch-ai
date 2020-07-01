@@ -6,8 +6,6 @@ import com.google.common.collect.Multimap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -32,7 +30,7 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
      * @param schema    The CloudSearch Schema.
      * @throws InvalidConfigException
      */
-    public StandardSkillSentimentExtraction(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException{
+    public StandardSkillSentimentExtraction(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException {
             this.parse(aiSkill, schema);
     }
 
@@ -51,8 +49,9 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
      */
     @Override
     public JSONObject getInputs() {
-        if(this.inputLanguage == null)
+        if(this.inputLanguage == null) {
             return null;
+        }
         JSONObject obj = new JSONObject();
         obj.put(Constants.CONFIG_INPUT_LANGUAGE, this.inputLanguage);
         return obj;
@@ -66,14 +65,14 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
      */
     @Override
     public void parseInputs(JSONObject input) throws InvalidConfigException {
-        if(input == null){
+        if(input == null) {
             return;
         }
         for(Object key : input.keySet()){
-            if(key.equals(Constants.CONFIG_INPUT_LANGUAGE)){
+            if(key.equals(Constants.CONFIG_INPUT_LANGUAGE)) {
                 setInputs(input);
             }
-            else{
+            else {
                 throw new InvalidConfigException("Input "+ key + " not expected for AISkill Sentiment Extraction.");
             }
         }
@@ -86,8 +85,8 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
      */
     @Override
     public void setFilter(JSONObject filter) {
-        for(Object key : filter.keySet()){
-            switch((String)key){
+        for(Object key : filter.keySet()) {
+            switch((String)key) {
                 case Constants.CONFIG_SENTIMENT_SCORE_POSITIVE: {
                     this.sentimentScorePositive = (double) filter.get(key);
                     break;
@@ -100,11 +99,11 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
                     this.sentimentMagnitudeThreshold = (double) filter.get(key);
                     break;
                 }
-                case Constants.CONFIG_SENTIMENT_MAGNITUDE_IGNORE:  {
+                case Constants.CONFIG_SENTIMENT_MAGNITUDE_IGNORE: {
                     this.sentimentMagnitudeIgnore = (String) filter.get(key);
                     break;
                 }
-                default :{
+                default : {
                     log.warning("Filter "+ key + " not expected for AISkill Sentiment Extraction. It will be ignored.");
 
                 }
@@ -144,11 +143,28 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
         if(Math.abs(this.sentimentScoreNegative) > 1.0){
             throw new InvalidConfigException("Filter sentimentScoreNegative cannot be greater than 1.0 or less than -1.0");
         }
-        if( !(this.sentimentMagnitudeIgnore.equals("yes") || this.sentimentMagnitudeIgnore.equals("no"))){
+        if( !(this.sentimentMagnitudeIgnore.equals("yes") || this.sentimentMagnitudeIgnore.equals("no"))) {
             throw new InvalidConfigException("Filter sentimentMagnitudeIgnore can only be either yes or no.");
         }
         if(this.sentimentScorePositive < this.sentimentScoreNegative) {
             throw new InvalidConfigException("Filter sentimentScorePositive cannot be smaller than sentimentScoreNegative.");
+        }
+    }
+
+    /**
+     * Decide sentiment type (POSITIVE/NEGATIVE) based on score.
+     * @param sentimentScore    Sentiment Score
+     * @return                  Returns POSITIVE/ NEGATIVE or empty string
+     */
+    private String decideSentiment(Double sentimentScore){
+        if( sentimentScore >= this.sentimentScorePositive) {
+            return Constants.CONFIG_SENTIMENT_POSITIVE;
+        }
+        else if(sentimentScore <= this.sentimentScoreNegative) {
+            return Constants.CONFIG_SENTIMENT_NEGATIVE;
+        }
+        else {
+            return "";
         }
     }
 
@@ -160,40 +176,30 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
      *                              be Positive, Negative, Neutral or Mixed.
      */
     private String getSentiment(Double sentimentScore, Double sentimentMagnitude) {
-        if(this.sentimentMagnitudeIgnore.equals("yes")){
-            if( sentimentScore >= this.sentimentScorePositive){
-                return Constants.CONFIG_SENTIMENT_POSITIVE;
-            }
-            else if(sentimentScore <= this.sentimentScoreNegative){
-                return Constants.CONFIG_SENTIMENT_NEGATIVE;
-            }
-            else{
+        String sentiment = decideSentiment(sentimentScore);
+        if(this.sentimentMagnitudeIgnore.equals("yes")) {
+            if(sentiment.equals("")) {
                 return Constants.CONFIG_SENTIMENT_NEUTRAL;
             }
+            else {
+                return sentiment;
+            }
         }
-        else{
-            if(sentimentMagnitude >= this.sentimentMagnitudeThreshold){
-
-                if( sentimentScore >= this.sentimentScorePositive){
-                    return Constants.CONFIG_SENTIMENT_POSITIVE;
-                }
-                else if(sentimentScore <= this.sentimentScoreNegative){
-                    return Constants.CONFIG_SENTIMENT_NEGATIVE;
-                }
-                else{
+        else {
+            if(sentimentMagnitude >= this.sentimentMagnitudeThreshold) {
+                if(sentiment.equals("")) {
                     return Constants.CONFIG_SENTIMENT_MIXED;
                 }
+                else {
+                    return sentiment;
+                }
             }
-            else{
-
-                if( sentimentScore >= this.sentimentScorePositive){
-                    return Constants.CONFIG_SENTIMENT_POSITIVE;
-                }
-                else if(sentimentScore <= this.sentimentScoreNegative){
-                    return Constants.CONFIG_SENTIMENT_NEGATIVE;
-                }
-                else{
+            else {
+                if(sentiment.equals("")) {
                     return Constants.CONFIG_SENTIMENT_NEUTRAL;
+                }
+                else {
+                    return sentiment;
                 }
             }
         }
@@ -222,23 +228,7 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try (LanguageServiceClient language = LanguageServiceClient.create()) {
-            Document doc;
-            if(CloudStorageHandler.isCouldStorageURI(contentOrURI)){
-                if(this.inputLanguage != "") {
-                    doc = Document.newBuilder().setGcsContentUri(contentOrURI).setLanguage(this.inputLanguage).setType(Document.Type.PLAIN_TEXT).build();
-                }
-                else {
-                    doc = Document.newBuilder().setGcsContentUri(contentOrURI).setType(Document.Type.PLAIN_TEXT).build();
-                }
-            }
-            else{
-                if(this.inputLanguage != "") {
-                    doc = Document.newBuilder().setContent(contentOrURI).setLanguage(this.inputLanguage).setType(Document.Type.PLAIN_TEXT).build();
-                }
-                else {
-                    doc = Document.newBuilder().setContent(contentOrURI).setType(Document.Type.PLAIN_TEXT).build();
-                }
-            }
+            Document doc = buildNLDocument(language, this.inputLanguage, contentOrURI);
 
             AnalyzeSentimentResponse response = language.analyzeSentiment(doc);
             Sentiment sentiment = response.getDocumentSentiment();
