@@ -1,5 +1,6 @@
 package com.google.cloudsearch.ai;
 
+import com.google.cloud.language.v1.*;
 import com.google.cloudsearch.exceptions.InvalidConfigException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -19,13 +20,13 @@ public abstract class BaseAISkill implements AISkill {
      * Parses the CloudsSearch Schema and stores the object and property names
      * @param schema    CloudSearch schema
      */
-    private void storeSchemaInfo(JSONObject schema){
+    private void storeSchemaInfo(JSONObject schema) {
         JSONArray schemaObjects = (JSONArray) schema.get(Constants.CONFIG_SCHEMA_OBJECT_DEFINITIONS);
-        for(Object schemaObj : schemaObjects){
+        for(Object schemaObj : schemaObjects) {
             JSONObject obj = (JSONObject) schemaObj;
             String objName = (String) obj.get(Constants.CONFIG_SCHEMA_NAME);
             JSONArray propertyDefinitions = (JSONArray) obj.get(Constants.CONFIG_SCHEMA_PROPERTY_DEFINITIONS);
-            for(Object propertyObj : propertyDefinitions){
+            for(Object propertyObj : propertyDefinitions) {
                 JSONObject property = (JSONObject) propertyObj;
                 String propertyName = (String) property.get(Constants.CONFIG_SCHEMA_NAME);
                 schemaInfo.put(objName+"."+propertyName, true);
@@ -40,11 +41,11 @@ public abstract class BaseAISkill implements AISkill {
      * @param schema    CloudSearch schema
      * @return
      */
-    private boolean isValidPropertyName(String propertyName, JSONObject schema){
-        if(isSchemaInfoStored == false){
+    private boolean isValidPropertyName(String propertyName, JSONObject schema) {
+        if(isSchemaInfoStored == false) {
             this.storeSchemaInfo(schema);
         }
-        if(this.schemaInfo.get(propertyName) == null){
+        if(this.schemaInfo.get(propertyName) == null) {
             return false;
         }
         else {
@@ -76,7 +77,7 @@ public abstract class BaseAISkill implements AISkill {
         if (aiSkillName == null || aiSkillName.equals("")) {
             throw new InvalidConfigException("No skill name specified.");
         }
-        else{
+        else {
             setAISkillName(aiSkillName);
         }
     }
@@ -110,7 +111,7 @@ public abstract class BaseAISkill implements AISkill {
             throw new InvalidConfigException("Output Mapping not specified.");
         }
         List<OutputMapping> outputMappingList = new ArrayList<OutputMapping>();
-        for(Object objMap : outputMapping){
+        for(Object objMap : outputMapping) {
             JSONObject mappingObject = (JSONObject) objMap;
             OutputMapping obj = new OutputMapping();
             if (isValidPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY), schema)) {
@@ -136,4 +137,25 @@ public abstract class BaseAISkill implements AISkill {
      *                                  to schema objects is invalid then throws InvalidConfigException.
      */
     protected abstract void parse(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException;
+
+    protected Document buildNLDocument(LanguageServiceClient language, String inputLanguage, String contentOrURI) {
+        Document doc;
+        if(CloudStorageHandler.isCloudStorageURI(contentOrURI)) {
+            if(inputLanguage != "") {
+                doc = Document.newBuilder().setGcsContentUri(contentOrURI).setLanguage(inputLanguage).setType(com.google.cloud.language.v1.Document.Type.PLAIN_TEXT).build();
+            }
+            else {
+                doc = Document.newBuilder().setGcsContentUri(contentOrURI).setType(com.google.cloud.language.v1.Document.Type.PLAIN_TEXT).build();
+            }
+        }
+        else{
+            if(inputLanguage != "") {
+                doc = Document.newBuilder().setContent(contentOrURI).setLanguage(inputLanguage).setType(com.google.cloud.language.v1.Document.Type.PLAIN_TEXT).build();
+            }
+            else {
+                doc = Document.newBuilder().setContent(contentOrURI).setType(com.google.cloud.language.v1.Document.Type.PLAIN_TEXT).build();
+            }
+        }
+        return doc;
+    }
 }

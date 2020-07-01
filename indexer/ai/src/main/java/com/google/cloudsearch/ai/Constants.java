@@ -52,4 +52,9 @@ public class Constants {
     public final static String CONFIG_ENTITY_NAME = "entity.name";
     public final static String CONFIG_ENTITY_TYPE_FILTER = "type";
     public final static String CONFIG_ENTITY_SALIENCE_FILTER = "minimumSalience";
+    public final static String CONFIG_ENTITY_ENCODING_UTF8 = "UTF8";
+    public final static String CONFIG_ENTITY_ENCODING_UTF16 = "UTF16";
+    public final static String CONFIG_ENTITY_ENCODING_UTF32 = "UTF32";
+
+
 }
