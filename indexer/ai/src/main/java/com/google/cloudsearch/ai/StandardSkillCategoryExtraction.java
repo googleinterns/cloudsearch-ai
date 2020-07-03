@@ -7,7 +7,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Class StandardSkillCategoryExtraction implements the methods required for
@@ -18,6 +18,7 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
 
     private String inputLanguage = "";
     private double categoryConfidence = 0.0;
+    LanguageServiceClient languageService;
     private Logger log = Logger.getLogger(StandardSkillCategoryExtraction.class.getName());
 
     /**
@@ -120,10 +121,12 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
      * @return              Returns true if the condition is satisfied, else returns false.
      */
     private boolean isFilterSatisfied(double confidence) {
-        if(confidence >= this.categoryConfidence)
+        if(confidence >= this.categoryConfidence) {
             return true;
-        else
+        }
+        else {
             return false;
+        }
     }
 
     /**
@@ -147,11 +150,11 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
      */
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
-        try (LanguageServiceClient language = LanguageServiceClient.create()) {
-            Document doc = buildNLDocument(language, this.inputLanguage, contentOrURI);
-
+        try {
+            languageService = LanguageServiceClient.create();
+            Document doc = buildNLDocument(this.inputLanguage, contentOrURI);
             ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(doc).build();
-            ClassifyTextResponse response = language.classifyText(request);
+            ClassifyTextResponse response = languageService.classifyText(request);
 
             for(OutputMapping outputMap : getOutputMappings()) {
                 String propertyName = outputMap.getPropertyName();
@@ -170,11 +173,24 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
                     }
                 }
             }
-            language.shutdown();
-            language.awaitTermination(30, TimeUnit.SECONDS);
-            language.close();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            log.error(e);
+        }
+    }
+
+    /**
+     * Shutdown LanguageService Client
+     */
+    @Override
+    public void shutdownSkill() {
+        try {
+            languageService.shutdown();
+            languageService.awaitTermination(30, TimeUnit.SECONDS);
+            languageService.close();
+        } catch (InterruptedException e) {
+            log.error(e);
+        } catch (Exception e) {
+            log.error(e);
         }
     }
 }

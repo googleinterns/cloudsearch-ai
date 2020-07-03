@@ -7,7 +7,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Class StandardSkillSentimentExtraction implements the methods required for
@@ -21,6 +21,7 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
     private double sentimentScoreNegative = -0.2;
     private double sentimentMagnitudeThreshold = 2.0;
     private String sentimentMagnitudeIgnore = "no";
+    LanguageServiceClient languageService;
     private Logger log = Logger.getLogger(StandardSkillEntityExtraction.class.getName());
 
     /**
@@ -49,7 +50,7 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
      */
     @Override
     public JSONObject getInputs() {
-        if(this.inputLanguage == null) {
+        if(this.inputLanguage == null || this.inputLanguage.isEmpty()) {
             return null;
         }
         JSONObject obj = new JSONObject();
@@ -104,7 +105,7 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
                     break;
                 }
                 default : {
-                    log.warning("Filter "+ key + " not expected for AISkill Sentiment Extraction. It will be ignored.");
+                    log.warn("Filter "+ key + " not expected for AISkill Sentiment Extraction. It will be ignored.");
 
                 }
             }
@@ -226,10 +227,10 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
      */
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
-        try (LanguageServiceClient language = LanguageServiceClient.create()) {
-            Document doc = buildNLDocument(language, this.inputLanguage, contentOrURI);
-
-            AnalyzeSentimentResponse response = language.analyzeSentiment(doc);
+        try {
+            languageService = LanguageServiceClient.create();
+            Document doc = buildNLDocument(this.inputLanguage, contentOrURI);
+            AnalyzeSentimentResponse response = languageService.analyzeSentiment(doc);
             Sentiment sentiment = response.getDocumentSentiment();
 
             for(OutputMapping outputMap : getOutputMappings()) {
@@ -251,11 +252,25 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
                     }
                 }
             }
-        language.shutdown();
-        language.awaitTermination(30, TimeUnit.SECONDS);
-        language.close();
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+
+        } catch (IOException e) {
+            log.error(e);
+        }
+    }
+
+    /**
+     * Shutdown LanguageService Client
+     */
+    @Override
+    public void shutdownSkill() {
+        try {
+            languageService.shutdown();
+            languageService.awaitTermination(30, TimeUnit.SECONDS);
+            languageService.close();
+        } catch (InterruptedException e) {
+            log.error(e);
+        } catch (Exception e) {
+            log.error(e);
         }
     }
 }

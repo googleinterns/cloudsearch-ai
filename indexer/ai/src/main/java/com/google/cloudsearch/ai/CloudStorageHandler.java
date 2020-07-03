@@ -8,7 +8,7 @@ public class CloudStorageHandler {
      * @return  Returns true if the given input is a Cloud Storage URI, else false.
      */
     public static boolean isCloudStorageURI(String str) {
-        if(str.substring(0,5).equals("gs://")) {
+        if(str.startsWith("gs://")) {
             return true;
         }
         else {

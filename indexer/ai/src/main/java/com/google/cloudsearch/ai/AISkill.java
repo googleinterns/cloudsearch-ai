@@ -29,8 +29,14 @@ public interface AISkill {
 
     /**
      * This function executes the corresponding skill and populates structured data for 1 resource at a time.
-     *
      * @param contentOrURI      The actual file content or Cloud storage URI
+     * @param structuredData    For storing CloudSearch Structured Data.
      */
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData);
+
+    /**
+     * Skills can perform necessary shutdown or cleanups in this function.
+     * Called after the skill has executed.
+     */
+    public void shutdownSkill();
 }

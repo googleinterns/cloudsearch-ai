@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import org.apache.log4j.Logger;
 
 /**
  * Class StandardSkillEntityExtraction implements the methods required for
@@ -22,6 +22,7 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
     private List<String> typeFilter = new ArrayList<String>();
     private String inputLanguage = "";
     private EncodingType inputEncoding = EncodingType.NONE;
+    LanguageServiceClient languageService;
     private Logger log = Logger.getLogger(StandardSkillEntityExtraction.class.getName());
 
     /**
@@ -44,7 +45,7 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
     public void setInputs(JSONObject input) {
         for (Object key : input.keySet()) {
             if (key.equals(Constants.CONFIG_INPUT_LANGUAGE)) {
-            this.inputLanguage = (String) input.get(Constants.CONFIG_INPUT_LANGUAGE);
+                this.inputLanguage = (String) input.get(Constants.CONFIG_INPUT_LANGUAGE);
             }
             else if (key.equals(Constants.CONFIG_INPUT_ENCODING)) {
                 switch ((String) input.get(Constants.CONFIG_INPUT_ENCODING)) {
@@ -64,7 +65,7 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
                           break;
                         }
                     default:
-                        log.warning("Encoding not supported. Input Encoding set to None");
+                        log.warn("Encoding not supported. Input Encoding set to None");
                 }
             }
         }
@@ -169,7 +170,6 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
         if(this.salienceFilter > 0.0 && salience < this.salienceFilter) {
                 ansSalience = false;
         }
-
         if( !this.typeFilter.isEmpty() && !this.typeFilter.contains(type.toString())) {
                 ansType = false;
         }
@@ -198,15 +198,14 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try {
-            LanguageServiceClient language = LanguageServiceClient.create();
-            Document doc = buildNLDocument(language, this.inputLanguage, contentOrURI);
-
+            languageService = LanguageServiceClient.create();
+            Document doc = buildNLDocument(this.inputLanguage, contentOrURI);
             AnalyzeEntitiesRequest request =
                     AnalyzeEntitiesRequest.newBuilder()
                             .setDocument(doc)
                             .setEncodingType(this.inputEncoding)
                             .build();
-            AnalyzeEntitiesResponse response = language.analyzeEntities(request);
+            AnalyzeEntitiesResponse response = languageService.analyzeEntities(request);
 
             for (Entity entity : response.getEntitiesList()) {
                 if( !isFilterSatisfied(entity.getType(), entity.getSalience()))
@@ -226,11 +225,25 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
                     }
                 }
             }
-            language.shutdown();
-            language.awaitTermination(30, TimeUnit.SECONDS);
-            language.close();
-         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+
+         } catch (IOException e) {
+                log.error(e);
+        }
+    }
+
+    /**
+     * Shutdown LanguageService Client
+     */
+    @Override
+    public void shutdownSkill() {
+        try {
+            languageService.shutdown();
+            languageService.awaitTermination(30, TimeUnit.SECONDS);
+            languageService.close();
+        } catch (InterruptedException e) {
+            log.error(e);
+        } catch (Exception e) {
+            log.error(e);
         }
     }
 }

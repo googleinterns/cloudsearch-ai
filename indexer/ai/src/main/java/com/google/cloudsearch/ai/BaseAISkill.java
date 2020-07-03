@@ -138,24 +138,27 @@ public abstract class BaseAISkill implements AISkill {
      */
     protected abstract void parse(JSONObject aiSkill, JSONObject schema) throws InvalidConfigException;
 
-    protected Document buildNLDocument(LanguageServiceClient language, String inputLanguage, String contentOrURI) {
+    /**
+     * Build Natural Language API Document.
+     * @param inputLanguage     Language specified in Skill Configuration
+     * @param contentOrURI      Content or Cloud Storage URI
+     * @return
+     */
+    protected Document buildNLDocument(String inputLanguage, String contentOrURI) {
         Document doc;
+        Document.Builder docBuilder = Document.newBuilder();
+
         if(CloudStorageHandler.isCloudStorageURI(contentOrURI)) {
-            if(inputLanguage != "") {
-                doc = Document.newBuilder().setGcsContentUri(contentOrURI).setLanguage(inputLanguage).setType(com.google.cloud.language.v1.Document.Type.PLAIN_TEXT).build();
-            }
-            else {
-                doc = Document.newBuilder().setGcsContentUri(contentOrURI).setType(com.google.cloud.language.v1.Document.Type.PLAIN_TEXT).build();
-            }
+            docBuilder.setGcsContentUri(contentOrURI);
         }
-        else{
-            if(inputLanguage != "") {
-                doc = Document.newBuilder().setContent(contentOrURI).setLanguage(inputLanguage).setType(com.google.cloud.language.v1.Document.Type.PLAIN_TEXT).build();
-            }
-            else {
-                doc = Document.newBuilder().setContent(contentOrURI).setType(com.google.cloud.language.v1.Document.Type.PLAIN_TEXT).build();
-            }
+        else {
+            docBuilder.setContent(contentOrURI);
         }
+
+        if(inputLanguage != null && !inputLanguage.isEmpty()) {
+            docBuilder.setLanguage(inputLanguage);
+        }
+        doc = docBuilder.setType(Document.Type.PLAIN_TEXT).build();
         return doc;
     }
 }
