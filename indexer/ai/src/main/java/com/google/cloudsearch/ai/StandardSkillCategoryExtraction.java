@@ -5,7 +5,6 @@ import com.google.cloudsearch.exceptions.InvalidConfigException;
 import com.google.common.collect.Multimap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
@@ -121,12 +120,7 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
      * @return              Returns true if the condition is satisfied, else returns false.
      */
     private boolean isFilterSatisfied(double confidence) {
-        if(confidence >= this.categoryConfidence) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return (confidence >= this.categoryConfidence);
     }
 
     /**
@@ -144,6 +138,15 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
     }
 
     /**
+     * Set up the language service client.
+     * @throws Exception    Throws IOException if client creation fails.
+     */
+    @Override
+    public void setupSkill() throws Exception {
+        languageService = LanguageServiceClient.create();
+    }
+
+    /**
      * Execute the Category Extraction Skill and populates the structured Data.
      * @param contentOrURI      The actual file content or Cloud storage URI
      * @param structuredData    Multimap to store the structured data for indexing.
@@ -151,7 +154,6 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try {
-            languageService = LanguageServiceClient.create();
             Document doc = buildNLDocument(this.inputLanguage, contentOrURI);
             ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(doc).build();
             ClassifyTextResponse response = languageService.classifyText(request);
@@ -173,7 +175,7 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
                     }
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error(e);
         }
     }

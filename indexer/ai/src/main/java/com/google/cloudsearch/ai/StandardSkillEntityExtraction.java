@@ -5,7 +5,6 @@ import com.google.cloudsearch.exceptions.InvalidConfigException;
 import com.google.common.collect.Multimap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -157,6 +156,7 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
         setFilter(filter);
     }
 
+
     /**
      * Check if the entity type and salience score satisfies the specified filter.
      * @param type      Entity Type
@@ -191,6 +191,15 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
     }
 
     /**
+     * Set up the language service client.
+     * @throws Exception    Throws IOException if client creation fails.
+     */
+    @Override
+    public void setupSkill() throws Exception {
+        languageService = LanguageServiceClient.create();
+    }
+
+    /**
      * Execute the Entity Extraction Skill and populates the structured Data.
      * @param contentOrURI      The actual file content or Cloud storage URI
      * @param structuredData    Multimap to store the structured data for indexing.
@@ -198,7 +207,6 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try {
-            languageService = LanguageServiceClient.create();
             Document doc = buildNLDocument(this.inputLanguage, contentOrURI);
             AnalyzeEntitiesRequest request =
                     AnalyzeEntitiesRequest.newBuilder()
@@ -226,7 +234,7 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
                 }
             }
 
-         } catch (IOException e) {
+         } catch (Exception e) {
                 log.error(e);
         }
     }

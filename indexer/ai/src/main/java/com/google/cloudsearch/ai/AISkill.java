@@ -28,6 +28,11 @@ public interface AISkill {
     public void parseFilter(JSONObject filter) throws InvalidConfigException;
 
     /**
+     * Function to set up the Skill and throws relevant Exception if set up fails.
+     */
+    public void setupSkill() throws Exception;
+
+    /**
      * This function executes the corresponding skill and populates structured data for 1 resource at a time.
      * @param contentOrURI      The actual file content or Cloud storage URI
      * @param structuredData    For storing CloudSearch Structured Data.

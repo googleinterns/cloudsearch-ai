@@ -221,6 +221,15 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
     }
 
     /**
+     * Set up the language service client.
+     * @throws Exception    Throws IOException if client creation fails.
+     */
+    @Override
+    public void setupSkill() throws Exception {
+        languageService = LanguageServiceClient.create();
+    }
+
+    /**
      * Execute the Sentiment Extraction Skill and populates the structured Data.
      * @param contentOrURI      The actual file content or Cloud storage URI
      * @param structuredData    Multimap to store the structured data for indexing.
@@ -228,7 +237,6 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try {
-            languageService = LanguageServiceClient.create();
             Document doc = buildNLDocument(this.inputLanguage, contentOrURI);
             AnalyzeSentimentResponse response = languageService.analyzeSentiment(doc);
             Sentiment sentiment = response.getDocumentSentiment();
@@ -253,7 +261,7 @@ public class StandardSkillSentimentExtraction extends BaseAISkill {
                 }
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error(e);
         }
     }

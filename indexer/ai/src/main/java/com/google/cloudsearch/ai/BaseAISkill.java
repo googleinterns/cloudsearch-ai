@@ -45,12 +45,7 @@ public abstract class BaseAISkill implements AISkill {
         if(isSchemaInfoStored == false) {
             this.storeSchemaInfo(schema);
         }
-        if(this.schemaInfo.get(propertyName) == null) {
-            return false;
-        }
-        else {
-            return true;
-        }
+        return !(this.schemaInfo.get(propertyName) == null);
     }
 
     /**
