@@ -29,14 +29,8 @@ public class AISkillDriver {
         JSONParser parser = new JSONParser();
         JSONObject aiConfig = null;
         JSONObject schema = null;
-        try {
-            schema = (JSONObject) parser.parse(new FileReader(schemaName));
-            aiConfig = (JSONObject) parser.parse(new FileReader(aiConfigName));
-        } catch (IOException e) {
-            log.error(e);
-        } catch (ParseException e) {
-            log.error(e);
-        }
+        schema = (JSONObject) parser.parse(new FileReader(schemaName));
+        aiConfig = (JSONObject) parser.parse(new FileReader(aiConfigName));
         skillSet = new AISkillSet(aiConfig, schema);
         for(AISkill skill : skillSet.getSkillSet()) {
             skill.setupSkill();
@@ -48,20 +42,31 @@ public class AISkillDriver {
      * @param structuredData    Multimap for storing the structured data.
      * @param contentOrURI      CloudStorage URI or File content in String format.
      */
-    public static void populateStructuredData(String contentOrURI, Multimap<String, Object> structuredData) {
-        List<AISkill> skillList = (List<AISkill>) skillSet.getSkillSet();
-        for(AISkill skill : skillList) {
-            skill.executeSkill(contentOrURI, structuredData);
+    public static void populateStructuredData(String contentOrURI, Multimap<String, Object> structuredData) throws NullPointerException {
+        try {
+            List<AISkill> skillList = (List<AISkill>) skillSet.getSkillSet();
+            for(AISkill skill : skillList) {
+                skill.executeSkill(contentOrURI, structuredData);
+            }
+        }
+        catch (NullPointerException e) {
+            throw new NullPointerException("AISkill List is not initialized. Call AISkillDriver.initialize() before calling populateStructuredData()");
         }
     }
 
     /**
      * Handles skill shutdown.
      */
-    public static void closeSkillDriver() {
-        List<AISkill> skillList = (List<AISkill>) skillSet.getSkillSet();
-        for(AISkill skill : skillList) {
-            skill.shutdownSkill();
+    public static void closeSkillDriver() throws NullPointerException {
+        try {
+            List<AISkill> skillList = (List<AISkill>) skillSet.getSkillSet();
+            for(AISkill skill : skillList) {
+                skill.shutdownSkill();
+            }
+        }
+        catch (NullPointerException e) {
+            throw new NullPointerException("AISkill List is not initialized. Call AISkillDriver.initialize() before calling closeSkillDriver()");
+
         }
     }
 }

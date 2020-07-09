@@ -52,6 +52,9 @@ public class AISkillSet {
     public void parse(JSONObject skillSet, JSONObject schema) throws InvalidConfigException {
         List<AISkill> skillList = new ArrayList();
         JSONArray skills = (JSONArray) skillSet.get(Constants.CONFIG_SKILL_SET);
+        if(skills == null)
+            throw new InvalidConfigException("AI Skill Set not specified in configuration.");
+
         log.info("Skills specified :");
         for(Object skillObj : skills) {
             JSONObject nextSkill = (JSONObject) skillObj;
