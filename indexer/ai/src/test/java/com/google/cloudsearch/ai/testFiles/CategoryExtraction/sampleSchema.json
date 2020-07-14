@@ -1,0 +1,13 @@
+{
+  "objectDefinitions" : [
+    {
+      "name" : "sample",
+      "propertyDefinitions" : [
+        {
+          "name" : "property",
+          "isReturnable" : true
+        }
+      ]
+    }
+  ]
+}

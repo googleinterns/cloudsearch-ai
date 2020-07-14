@@ -106,8 +106,15 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
             return;
         }
         for(Object key : filter.keySet()) {
-            if (key.equals(Constants.CONFIG_CATEGORY_CONFIDENCE))
-                setFilter(filter);
+            if (key.equals(Constants.CONFIG_CATEGORY_CONFIDENCE)) {
+                try {
+                    double checkType = (double) filter.get(Constants.CONFIG_CATEGORY_CONFIDENCE);
+                    setFilter(filter);
+                }
+                catch(Exception e) {
+                    throw new InvalidConfigException("Filter confidence cannot be converted into double data type.");
+                }
+            }
             else {
                 throw new InvalidConfigException("Filter " + key + " is not supported for AISkill Category Extraction.");
             }
