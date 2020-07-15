@@ -12,7 +12,8 @@ import org.junit.runners.Suite;
         TestCategoryExtractionSkill.class,
         TestEntityExtractionSkill.class,
         TestSentimentExtractionSkill.class,
-        TestBaseAISkill.class
+        TestBaseAISkill.class,
+        TestCustomSkill.class
 })
 
 public class TestSuite {

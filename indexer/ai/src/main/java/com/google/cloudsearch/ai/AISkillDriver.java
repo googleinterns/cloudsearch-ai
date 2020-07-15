@@ -1,14 +1,10 @@
 package com.google.cloudsearch.ai;
 
-import com.google.cloudsearch.ai.AISkill;
-import com.google.cloudsearch.ai.AISkillSet;
 import com.google.common.collect.Multimap;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.List;
 import org.apache.log4j.Logger;
 
@@ -31,7 +27,7 @@ public class AISkillDriver {
         JSONObject schema = (JSONObject) parser.parse(new FileReader(schemaName));
         JSONObject aiConfig = (JSONObject) parser.parse(new FileReader(aiConfigName));
         skillSet = new AISkillSet(aiConfig, schema);
-        for(AISkill skill : skillSet.getSkillSet()) {
+        for(AISkill skill : skillSet.getSkills()) {
             skill.setupSkill();
         }
     }
@@ -43,7 +39,7 @@ public class AISkillDriver {
      */
     public static void populateStructuredData(String contentOrURI, Multimap<String, Object> structuredData) {
 
-        List<AISkill> skillList = (List<AISkill>) skillSet.getSkillSet();
+        List<AISkill> skillList = (List<AISkill>) skillSet.getSkills();
         if(skillList == null) {
             log.info("No skills Specified. Initialize the driver before calling populateStructuredData.");
         }
@@ -57,7 +53,7 @@ public class AISkillDriver {
      */
     public static void closeSkillDriver() throws NullPointerException {
         try {
-            List<AISkill> skillList = (List<AISkill>) skillSet.getSkillSet();
+            List<AISkill> skillList = (List<AISkill>) skillSet.getSkills();
             for(AISkill skill : skillList) {
                 skill.shutdownSkill();
             }

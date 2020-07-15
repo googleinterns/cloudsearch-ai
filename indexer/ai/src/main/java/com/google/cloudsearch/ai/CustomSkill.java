@@ -1,7 +1,6 @@
 package com.google.cloudsearch.ai;
 
 import com.google.cloudsearch.exceptions.InvalidConfigException;
-import com.google.cloudsearch.exceptions.InvalidResponseException;
 import com.google.common.collect.Multimap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -151,6 +150,9 @@ public class CustomSkill extends BaseAISkill {
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try {
+            if(connection != null) {
+                throw new IllegalStateException("Connection for Cloud Function not initialized. Call setupSkill() before calling executeSkill().");
+            }
             //Data (Content or URI) is the first parameter of the input JSON
             JSONObject obj = getInputs();
             obj.put("data", contentOrURI);
@@ -171,23 +173,22 @@ public class CustomSkill extends BaseAISkill {
                 }
                 JSONParser parser = new JSONParser();
                 JSONObject res;
-                try {
-                    res =  (JSONObject) parser.parse(response.toString());
-                    for(OutputMapping outputMap : getOutputMappings()) {
-                        if(res.get(outputMap.getSkillOutputField()) == null)
-                            continue;
-                        String property = outputMap.getPropertyName().split("\\.")[1];
-                        for(Object element : (JSONArray)res.get(outputMap.getSkillOutputField())) {
-                            structuredData.put(property, element);
-                        }
+                res =  (JSONObject) parser.parse(response.toString());
+                for(OutputMapping outputMap : getOutputMappings()) {
+                    if(res.get(outputMap.getSkillOutputField()) == null)
+                        continue;
+                    String property = outputMap.getPropertyName().split("\\.")[1];
+                    for(Object element : (JSONArray)res.get(outputMap.getSkillOutputField())) {
+                        structuredData.put(property, element);
                     }
                 }
-                catch(Exception e) {
-                    throw new InvalidResponseException("Invalid Response from CloudFunction " + getAISkillName());
-                }
             }
-
-        } catch (IOException | InvalidResponseException e) {
+        }
+        catch (IOException | IllegalStateException e) {
+            log.error(e);
+        }
+        catch (Exception e) {
+            log.info("Invalid Response from CloudFunction " + getAISkillName());
             log.error(e);
         }
     }

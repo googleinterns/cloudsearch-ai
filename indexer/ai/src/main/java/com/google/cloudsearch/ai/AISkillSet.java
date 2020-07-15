@@ -13,7 +13,7 @@ import org.apache.log4j.Logger;
  */
 public class AISkillSet {
 
-    private List<AISkill> skillSet;
+    private List<AISkill> skills;
     private Logger log = Logger.getLogger(AISkillSet.class);
 
     /**
@@ -29,18 +29,18 @@ public class AISkillSet {
 
     /**
      * Set the skill set.
-     * @param skillSet  List of AI Skills
+     * @param skills  List of AI Skills
      */
-    public void setSkillSet(List<AISkill> skillSet) {
-        this.skillSet = skillSet;
+    public void setSkills(List<AISkill> skills) {
+        this.skills = skills;
     }
 
     /**
      * Returns the set of skills.
      * @return
      */
-    public List<AISkill> getSkillSet() {
-        return this.skillSet;
+    public List<AISkill> getSkills() {
+        return this.skills;
     }
 
     /**
@@ -51,12 +51,12 @@ public class AISkillSet {
      */
     public void parse(JSONObject skillSet, JSONObject schema) throws InvalidConfigException {
         List<AISkill> skillList = new ArrayList();
-        JSONArray skills = (JSONArray) skillSet.get(Constants.CONFIG_SKILL_SET);
-        if(skills == null) {
+        JSONArray skillsArray = (JSONArray) skillSet.get(Constants.CONFIG_SKILL_SET);
+        if(skillsArray == null) {
             throw new InvalidConfigException("AI Skill Set not specified in configuration.");
         }
         log.info("Skills specified :");
-        for(Object skillObj : skills) {
+        for(Object skillObj : skillsArray) {
             JSONObject currentSkill = (JSONObject) skillObj;
             String skillName;
             String[] nameParts;
@@ -102,6 +102,6 @@ public class AISkillSet {
                 throw new InvalidConfigException("Invalid Skill name");
             }
         }
-        this.setSkillSet(skillList);
+        this.setSkills(skillList);
     }
 }
