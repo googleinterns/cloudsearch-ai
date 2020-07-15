@@ -1,0 +1,17 @@
+{
+  "aiSkillSet" : [
+    {
+      "aiSkillName" : "CloudSearch.StandardAISkills.EntityExtraction",
+      "filters" : {
+        "type" : ["string"],
+        "minimumSalience" : "abc"
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "sample.property",
+          "outputField" : "entity.name"
+        }
+      ]
+    }
+  ]
+}

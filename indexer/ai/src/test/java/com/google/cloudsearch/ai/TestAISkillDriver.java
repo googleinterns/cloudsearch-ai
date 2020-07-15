@@ -23,7 +23,7 @@ public class TestAISkillDriver {
      * @throws Exception
      */
     @Test
-    public void testInitialize1() throws Exception {
+    public void testInitializeInvalidFileName() throws Exception {
         exception.expect(IOException.class);
         AISkillDriver.initialize("file1", "file2");
     }
@@ -33,7 +33,7 @@ public class TestAISkillDriver {
      * @throws Exception
      */
     @Test
-    public void testInitialize2() throws Exception {
+    public void testInitializeInvalidFileType() throws Exception {
         exception.expect(ParseException.class);
         String file_path = "./src/test/java/com/google/cloudsearch/ai/testFiles/AISkillDriver/NonJSONFile.txt";
         AISkillDriver.initialize(file_path, file_path);
@@ -44,7 +44,7 @@ public class TestAISkillDriver {
      * @throws Exception
      */
     @Test
-    public void testInitialize3() throws Exception {
+    public void testInitializeInvalidJSONFile() throws Exception {
         exception.expect(InvalidConfigException.class);
         String file_path = "./src/test/java/com/google/cloudsearch/ai/testFiles/AISkillDriver/SampleJSON.json";
         AISkillDriver.initialize(file_path, file_path);

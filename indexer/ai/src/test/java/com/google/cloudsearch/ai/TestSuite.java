@@ -9,7 +9,10 @@ import org.junit.runners.Suite;
         TestCloudStorageHandler.class,
         TestAISkillDriver.class,
         TestAISkillSet.class,
-        TestCategoryExtractionSkill.class
+        TestCategoryExtractionSkill.class,
+        TestEntityExtractionSkill.class,
+        TestSentimentExtractionSkill.class,
+        TestBaseAISkill.class
 })
 
 public class TestSuite {

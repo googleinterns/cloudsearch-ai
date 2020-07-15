@@ -12,9 +12,9 @@ import java.io.FileReader;
 import java.io.IOException;
 
 /**
- * Test Class StandardSkillCategoryExtraction
+ * Test Standard Skill Sentiment Extraction
  */
-public class TestCategoryExtractionSkill {
+public class TestSentimentExtractionSkill {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -27,7 +27,7 @@ public class TestCategoryExtractionSkill {
         JSONParser parser = new JSONParser();
         JSONObject schema = null;
         try {
-            schema = (JSONObject) parser.parse(new FileReader("./src/test/java/com/google/cloudsearch/ai/testFiles/CategoryExtraction/sampleSchema.json"));
+            schema = (JSONObject) parser.parse(new FileReader("./src/test/java/com/google/cloudsearch/ai/testFiles/SentimentExtraction/sampleSchema.json"));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ParseException e) {
@@ -45,7 +45,7 @@ public class TestCategoryExtractionSkill {
         JSONParser parser = new JSONParser();
         JSONObject config = null;
         try {
-            config = (JSONObject) parser.parse(new FileReader("./src/test/java/com/google/cloudsearch/ai/testFiles/CategoryExtraction/"+configName+".json"));
+            config = (JSONObject) parser.parse(new FileReader("./src/test/java/com/google/cloudsearch/ai/testFiles/SentimentExtraction/"+configName+".json"));
             for(Object obj : (JSONArray)config.get("aiSkillSet")) {
                 return (JSONObject) obj;
             }
@@ -66,11 +66,11 @@ public class TestCategoryExtractionSkill {
         JSONObject config = getTestConfig("skillNameConfig");
         JSONObject schema = getTestSchema();
         exception.expect(InvalidConfigException.class);
-        StandardSkillCategoryExtraction categoryExtraction = new StandardSkillCategoryExtraction(config, schema);
+        StandardSkillSentimentExtraction sentimentExtraction = new StandardSkillSentimentExtraction(config, schema);
     }
 
     /**
-     * Test the behaviour when the filter confidence is of type string instead of double.
+     * Test the behaviour when the filter negativeScore is greater than positiveScore.
      * @throws InvalidConfigException
      */
     @Test
@@ -78,19 +78,6 @@ public class TestCategoryExtractionSkill {
         JSONObject config = getTestConfig("testFilter");
         JSONObject schema = getTestSchema();
         exception.expect(InvalidConfigException.class);
-        StandardSkillCategoryExtraction categoryExtraction = new StandardSkillCategoryExtraction(config, schema);
+        StandardSkillSentimentExtraction sentimentExtraction = new StandardSkillSentimentExtraction(config, schema);
     }
-
-    /**
-     * Test the behaviour when the filter name is invalid.
-     * @throws InvalidConfigException
-     */
-    @Test
-    public void testIncorrectFilterName() throws InvalidConfigException {
-        JSONObject config = getTestConfig("testIncorrectFilter");
-        JSONObject schema = getTestSchema();
-        exception.expect(InvalidConfigException.class);
-        StandardSkillCategoryExtraction categoryExtraction = new StandardSkillCategoryExtraction(config, schema);
-    }
-
 }

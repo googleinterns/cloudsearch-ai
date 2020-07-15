@@ -32,7 +32,7 @@ public class TestAISkillSet {
      * @throws InvalidConfigException
      */
     @Test
-    public void testParse1() throws InvalidConfigException {
+    public void testParseInvalidSkillName() throws InvalidConfigException {
         exception.expect(InvalidConfigException.class);
         JSONObject skill1 = new JSONObject();
         skill1.put("aiSkillName", "CloudSearch.InvalidName");
@@ -51,7 +51,7 @@ public class TestAISkillSet {
      * @throws InvalidConfigException
      */
     @Test
-    public void testParse2() throws InvalidConfigException {
+    public void testParseInvalidStandardSkillName() throws InvalidConfigException {
         exception.expect(InvalidConfigException.class);
         JSONObject skill1 = new JSONObject();
         skill1.put("aiSkillName", "CloudSearch.StandardAISkills.newSkill");

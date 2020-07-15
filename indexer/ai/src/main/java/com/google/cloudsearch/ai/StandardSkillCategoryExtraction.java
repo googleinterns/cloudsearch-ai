@@ -107,12 +107,11 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
         }
         for(Object key : filter.keySet()) {
             if (key.equals(Constants.CONFIG_CATEGORY_CONFIDENCE)) {
-                try {
-                    double checkType = (double) filter.get(Constants.CONFIG_CATEGORY_CONFIDENCE);
-                    setFilter(filter);
+                if(filter.get(key).getClass().getName() != Double.class.getName()) {
+                    throw new InvalidConfigException("Filter confidence should be of type double.");
                 }
-                catch(Exception e) {
-                    throw new InvalidConfigException("Filter confidence cannot be converted into double data type.");
+                else {
+                    setFilter(filter);
                 }
             }
             else {
@@ -162,7 +161,8 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try {
             if(languageService == null) {
-                throw new IllegalStateException("Language Service client not initialized. Call setupSkill() before executing the skill.");
+                throw new IllegalStateException();
+                //throw new IllegalStateException("Language Service client not initialized. Call setupSkill() before executing the skill.");
             }
             Document doc = buildNLDocument(this.inputLanguage, contentOrURI);
             ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(doc).build();

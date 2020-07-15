@@ -1,0 +1,18 @@
+{
+  "aiSkillSet" : [
+    {
+      "aiSkillName" : "CloudSearch.StandardAISkills.SentimentExtraction",
+      "filters" : {
+        "positiveScore" : 0.2,
+        "negativeScore" : 0.4,
+        "magnitudeThreshold" : 0.3
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "sample.property",
+          "outputField" : "sentiment"
+        }
+      ]
+    }
+  ]
+}

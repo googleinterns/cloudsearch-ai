@@ -21,7 +21,8 @@ import org.apache.log4j.Logger;
 public class CustomSkill extends BaseAISkill {
 
     private JSONObject input = new JSONObject();
-    private String url = "";
+    private String cloudFunctionURL = "";
+    HttpURLConnection connection;
     private Logger log = Logger.getLogger(StandardSkillCategoryExtraction.class.getName());
 
   /**
@@ -63,8 +64,9 @@ public class CustomSkill extends BaseAISkill {
         if(input == null) {
             setInputs(new JSONObject());
         }
-        else
+        else {
             setInputs(input);
+        }
     }
 
     /**
@@ -100,7 +102,7 @@ public class CustomSkill extends BaseAISkill {
      * @param url   URL for invoking the Cloud Function.
      */
     public void setURL(String url) {
-        this.url = url;
+        this.cloudFunctionURL = url;
     }
 
     /**
@@ -108,7 +110,7 @@ public class CustomSkill extends BaseAISkill {
      * @return
      */
     public String getURL() {
-        return this.url;
+        return this.cloudFunctionURL;
     }
 
     /**
@@ -130,7 +132,14 @@ public class CustomSkill extends BaseAISkill {
      *  No specific setup required.
      */
     @Override
-    public void setupSkill() {}
+    public void setupSkill() throws IOException {
+        URL cloudFunction = new URL(this.getURL());
+        connection = (HttpURLConnection) cloudFunction.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("content-type", "application/json");
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setDoOutput(true);
+    }
 
     /**
      * Execute the Cloud Function.
@@ -146,13 +155,6 @@ public class CustomSkill extends BaseAISkill {
             JSONObject obj = getInputs();
             obj.put("data", contentOrURI);
             this.setInputs(obj);
-
-            URL cloudFunction = new URL(this.getURL());
-            HttpURLConnection connection = (HttpURLConnection) cloudFunction.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("content-type", "application/json");
-            connection.setRequestProperty("Accept", "application/json");
-            connection.setDoOutput(true);
 
             String jsonInputString = this.input.toJSONString();
             try(OutputStream os = connection.getOutputStream()) {
@@ -195,6 +197,6 @@ public class CustomSkill extends BaseAISkill {
      */
     @Override
     public void shutdownSkill() {
-
+        connection.disconnect();
     }
 }

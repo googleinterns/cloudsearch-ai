@@ -109,14 +109,25 @@ public abstract class BaseAISkill implements AISkill {
         for(Object objMap : outputMapping) {
             JSONObject mappingObject = (JSONObject) objMap;
             OutputMapping obj = new OutputMapping();
-            if (isValidPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY), schema)) {
-                obj.setPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY));
+            if(mappingObject.get(Constants.CONFIG_TARGET_PROPERTY) == null) {
+                throw new InvalidConfigException("targetField not present in outputMappings.");
             }
             else {
-                throw new InvalidConfigException("Invalid Object or Property Name");
+                if (isValidPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY), schema)) {
+                    obj.setPropertyName((String) mappingObject.get(Constants.CONFIG_TARGET_PROPERTY));
+                }
+                else {
+                    throw new InvalidConfigException("Invalid Object or Property Name");
+                }
             }
-            obj.setSkillOutputField((String) mappingObject.get(Constants.CONFIG_OUTPUT_FILED));
-            outputMappingList.add(obj);
+
+            if (mappingObject.get(Constants.CONFIG_OUTPUT_FILED) == null) {
+                throw new InvalidConfigException("outputField not present in outputMappings.");
+            }
+            else {
+                obj.setSkillOutputField((String) mappingObject.get(Constants.CONFIG_OUTPUT_FILED));
+                outputMappingList.add(obj);
+            }
         }
         setOutputMappings(outputMappingList);
     }

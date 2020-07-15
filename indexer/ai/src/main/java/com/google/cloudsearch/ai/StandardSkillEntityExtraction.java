@@ -152,6 +152,16 @@ public class StandardSkillEntityExtraction extends BaseAISkill {
         for(Object key : filter.keySet()){
             if(!(key.equals(Constants.CONFIG_ENTITY_TYPE_FILTER) || key.equals(Constants.CONFIG_ENTITY_SALIENCE_FILTER)))
                 throw new InvalidConfigException("Filter "+ key + " not expected for AISkill Entity Extraction.");
+            else if(key.equals(Constants.CONFIG_ENTITY_TYPE_FILTER)) {
+                if(filter.get(key).getClass().getName() != JSONArray.class.getName()) {
+                    throw new InvalidConfigException("Filter "+ key + " should be a JSON Array");
+                }
+            }
+            else if(key.equals(Constants.CONFIG_ENTITY_SALIENCE_FILTER)) {
+                if(filter.get(key).getClass().getName() != Double.class.getName()) {
+                    throw new InvalidConfigException("Filter "+ key + " should be of type Double");
+                }
+            }
         }
         setFilter(filter);
     }

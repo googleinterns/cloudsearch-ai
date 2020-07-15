@@ -11,23 +11,16 @@ import org.junit.rules.ExpectedException;
 import java.io.FileReader;
 import java.io.IOException;
 
-/**
- * Test Class StandardSkillCategoryExtraction
- */
-public class TestCategoryExtractionSkill {
+public class TestBaseAISkill {
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
-    /**
-     * Returns the Sample Schema JSON file used for testing.
-     * @return
-     */
     private JSONObject getTestSchema() {
         JSONParser parser = new JSONParser();
         JSONObject schema = null;
         try {
-            schema = (JSONObject) parser.parse(new FileReader("./src/test/java/com/google/cloudsearch/ai/testFiles/CategoryExtraction/sampleSchema.json"));
+            schema = (JSONObject) parser.parse(new FileReader("./src/test/java/com/google/cloudsearch/ai/testFiles/BaseAISkill/sampleSchema.json"));
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ParseException e) {
@@ -36,16 +29,11 @@ public class TestCategoryExtractionSkill {
         return schema;
     }
 
-    /**
-     * Returns the skill configuration file based on input configName.
-     * @param configName
-     * @return
-     */
     private JSONObject getTestConfig(String configName) {
         JSONParser parser = new JSONParser();
         JSONObject config = null;
         try {
-            config = (JSONObject) parser.parse(new FileReader("./src/test/java/com/google/cloudsearch/ai/testFiles/CategoryExtraction/"+configName+".json"));
+            config = (JSONObject) parser.parse(new FileReader("./src/test/java/com/google/cloudsearch/ai/testFiles/BaseAISkill/"+configName+".json"));
             for(Object obj : (JSONArray)config.get("aiSkillSet")) {
                 return (JSONObject) obj;
             }
@@ -57,40 +45,27 @@ public class TestCategoryExtractionSkill {
         return null;
     }
 
-    /**
-     * Test the behaviour when the skill config has an empty skill name.
-     * @throws InvalidConfigException
-     */
     @Test
-    public void testParse() throws InvalidConfigException {
-        JSONObject config = getTestConfig("skillNameConfig");
+    public void testOutputField() throws InvalidConfigException {
+        JSONObject config = getTestConfig("testOutputField");
         JSONObject schema = getTestSchema();
         exception.expect(InvalidConfigException.class);
         StandardSkillCategoryExtraction categoryExtraction = new StandardSkillCategoryExtraction(config, schema);
     }
 
-    /**
-     * Test the behaviour when the filter confidence is of type string instead of double.
-     * @throws InvalidConfigException
-     */
     @Test
-    public void testFilterSatisfied() throws InvalidConfigException {
-        JSONObject config = getTestConfig("testFilter");
+    public void testTargetProperty() throws InvalidConfigException {
+        JSONObject config = getTestConfig("testTargetProperty");
         JSONObject schema = getTestSchema();
         exception.expect(InvalidConfigException.class);
         StandardSkillCategoryExtraction categoryExtraction = new StandardSkillCategoryExtraction(config, schema);
     }
 
-    /**
-     * Test the behaviour when the filter name is invalid.
-     * @throws InvalidConfigException
-     */
     @Test
-    public void testIncorrectFilterName() throws InvalidConfigException {
-        JSONObject config = getTestConfig("testIncorrectFilter");
+    public void testValidPropertyName() throws InvalidConfigException {
+        JSONObject config = getTestConfig("testValidPropertyName");
         JSONObject schema = getTestSchema();
         exception.expect(InvalidConfigException.class);
         StandardSkillCategoryExtraction categoryExtraction = new StandardSkillCategoryExtraction(config, schema);
     }
-
 }

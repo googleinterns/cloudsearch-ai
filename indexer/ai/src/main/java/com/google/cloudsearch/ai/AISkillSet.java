@@ -52,36 +52,40 @@ public class AISkillSet {
     public void parse(JSONObject skillSet, JSONObject schema) throws InvalidConfigException {
         List<AISkill> skillList = new ArrayList();
         JSONArray skills = (JSONArray) skillSet.get(Constants.CONFIG_SKILL_SET);
-        if(skills == null)
+        if(skills == null) {
             throw new InvalidConfigException("AI Skill Set not specified in configuration.");
-
+        }
         log.info("Skills specified :");
         for(Object skillObj : skills) {
-            JSONObject nextSkill = (JSONObject) skillObj;
+            JSONObject currentSkill = (JSONObject) skillObj;
             String skillName;
             String[] nameParts;
-            try {
-                skillName = (String) nextSkill.get(Constants.CONFIG_SKILL_NAME);
-                nameParts = skillName.split("\\.");
+            skillName = (String) currentSkill.get(Constants.CONFIG_SKILL_NAME);
+            if(skillName == null || skillName.equals("")) {
+                throw new InvalidConfigException("Skill name not specified.");
+            }
+            nameParts = skillName.split("\\.");
+            if(nameParts.length !=3) {
+                throw new InvalidConfigException("Skill name is invalid.");
+            }
+            else {
                 log.info(nameParts[0] + " " + nameParts[1] + " " + nameParts[2]);
             }
-            catch(Exception e) {
-                throw new InvalidConfigException("Skill name invalid or not specified.");
-            }
+
             if(nameParts[1].equals(Constants.CONFIG_STANDARD_SKILL)) {
                 switch(nameParts[2]) {
                     case Constants.CONFIG_ENTITY_SKILL_NAME: {
-                        AISkill skill = new StandardSkillEntityExtraction(nextSkill, schema);
+                        AISkill skill = new StandardSkillEntityExtraction(currentSkill, schema);
                         skillList.add(skill);
                         break;
                     }
                     case Constants.CONFIG_SENTIMENT_SKILL_NAME: {
-                        AISkill skill = new StandardSkillSentimentExtraction(nextSkill, schema);
+                        AISkill skill = new StandardSkillSentimentExtraction(currentSkill, schema);
                         skillList.add(skill);
                         break;
                     }
                     case Constants.CONFIG_CATEGORY_SKILL_NAME: {
-                        AISkill skill = new StandardSkillCategoryExtraction(nextSkill, schema);
+                        AISkill skill = new StandardSkillCategoryExtraction(currentSkill, schema);
                         skillList.add(skill);
                         break;
                     }
@@ -91,7 +95,7 @@ public class AISkillSet {
                 }
             }
             else if(nameParts[1].equals(Constants.CONFIG_CUSTOM_SKILL)) {
-                AISkill skill = new CustomSkill(nextSkill, schema);
+                AISkill skill = new CustomSkill(currentSkill, schema);
                 skillList.add(skill);
             }
             else {
