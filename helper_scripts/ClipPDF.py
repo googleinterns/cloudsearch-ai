@@ -7,9 +7,9 @@ from os import listdir
 from os.path import isfile, join
 
 #Clip PDFs to size 300kb
-def clipPDF(pdf): 
-    pdfFileObj = open(pdf, 'rb')
-    b = os.path.getsize(pdf)
+def clip_PDF(pdf_file_path): 
+    pdfFileObj = open(pdf_file_path, 'rb')
+    b = os.path.getsize(pdf_file_path)
     pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
     pages = pdfReader.numPages 
     if pages < 3:
@@ -23,7 +23,7 @@ def clipPDF(pdf):
         return
     start = 0
     pdfWriter = PyPDF2.PdfFileWriter() 
-    outputpdf = './new_store/' + pdf.split('.pdf')[0] + '.pdf'
+    outputpdf = './new_store/' + pdf_file_path.split('.pdf')[0] + '.pdf'
     for page in range(start,end): 
         pdfWriter.addPage(pdfReader.getPage(page)) 
     with open(outputpdf, "wb") as f: 
@@ -40,9 +40,9 @@ def main():
         i+=1
         if i%200 ==0 :
             print(i + "files clipped.")
-        pdf = "store_https/"+file
+        pdf_file_path = "store_https/"+file
         try:
-            clipPDF(pdf) 
+            clip_PDF(pdf_file_path) 
         except:
             print("error")
 
