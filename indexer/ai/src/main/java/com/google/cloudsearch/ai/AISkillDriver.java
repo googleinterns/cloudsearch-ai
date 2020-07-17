@@ -38,28 +38,27 @@ public class AISkillDriver {
      * @param contentOrURI      CloudStorage URI or File content in String format.
      */
     public static void populateStructuredData(String contentOrURI, Multimap<String, Object> structuredData) {
-
         List<AISkill> skillList = (List<AISkill>) skillSet.getSkills();
         if(skillList == null) {
-            log.info("No skills Specified. Initialize the driver before calling populateStructuredData.");
+            log.error("No skills Specified. Initialize the driver before calling populateStructuredData.");
+            return;
         }
-        for(AISkill skill : skillList) {
+        skillList.forEach(skill -> {
             skill.executeSkill(contentOrURI, structuredData);
-        }
+        });
     }
 
     /**
      * Handles skill shutdown.
      */
     public static void closeSkillDriver() throws NullPointerException {
-        try {
-            List<AISkill> skillList = (List<AISkill>) skillSet.getSkills();
-            for(AISkill skill : skillList) {
-                skill.shutdownSkill();
-            }
+        List<AISkill> skillList = (List<AISkill>) skillSet.getSkills();
+        if(skillList == null) {
+            log.error("AISkill List is not initialized. Call AISkillDriver.initialize() before calling closeSkillDriver()");
+            return;
         }
-        catch (NullPointerException e) {
-            throw new NullPointerException("AISkill List is not initialized. Call AISkillDriver.initialize() before calling closeSkillDriver()");
-        }
+        skillList.forEach(skill -> {
+            skill.shutdownSkill();
+        });
     }
 }
