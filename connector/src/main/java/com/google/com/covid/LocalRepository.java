@@ -66,10 +66,10 @@ public class LocalRepository implements Repository {
             AISkillDriver.initialize(aiConfigName, schemaName);
         }
         catch(InvalidConfigException e){
-            log.warning("Invalid Config");
+            log.error("Invalid Config");
         }
         catch (Exception e) {
-            e.printStackTrace();
+            log.error(e);
         }
     }
 
@@ -90,7 +90,7 @@ public class LocalRepository implements Repository {
                     try {
                         return buildDocument(id);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        log.error(e);
                     }
                     return null;
                 })
@@ -127,9 +127,9 @@ public class LocalRepository implements Repository {
                 idMap.put(row[0],map);
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            log.error(e);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e).;
         }
     }
 
@@ -160,7 +160,7 @@ public class LocalRepository implements Repository {
         try {
             pdf = Files.readAllBytes(Paths.get(filepath));
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e);
         }
         ByteArrayContent byteContent = new ByteArrayContent("application/pdf",pdf);
 
