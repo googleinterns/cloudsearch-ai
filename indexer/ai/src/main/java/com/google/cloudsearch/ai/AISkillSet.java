@@ -61,7 +61,7 @@ public class AISkillSet {
             String skillName;
             String[] nameParts;
             skillName = (String) currentSkill.get(Constants.CONFIG_SKILL_NAME);
-            if(skillName == null || skillName.equals("")) {
+            if(skillName == null || skillName.isEmpty()) {
                 throw new InvalidConfigException("Skill name not specified.");
             }
             nameParts = skillName.split("\\.");

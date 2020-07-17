@@ -128,7 +128,7 @@ public class CustomSkill extends BaseAISkill {
     }
 
     /**
-     *  No specific setup required.
+     *  SetUp the connection with the cloud function
      */
     @Override
     public void setupSkill() throws IOException {
@@ -194,7 +194,7 @@ public class CustomSkill extends BaseAISkill {
     }
 
     /**
-     * No Specific Shut Down required.
+     * Disconnect the connection with the cloud function.
      */
     @Override
     public void shutdownSkill() {

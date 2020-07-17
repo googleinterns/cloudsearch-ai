@@ -161,8 +161,7 @@ class StandardSkillCategoryExtraction extends BaseAISkill {
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try {
             if(languageService == null) {
-                throw new IllegalStateException();
-                //throw new IllegalStateException("Language Service client not initialized. Call setupSkill() before executing the skill.");
+                throw new IllegalStateException("Language Service client not initialized. Call setupSkill() before executing the skill.");
             }
             Document doc = buildNLDocument(this.inputLanguage, contentOrURI);
             ClassifyTextRequest request = ClassifyTextRequest.newBuilder().setDocument(doc).build();
