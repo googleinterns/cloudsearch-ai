@@ -1,0 +1,73 @@
+.content {
+  padding: 20px;
+}
+
+#header {
+  flex: 0 0 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+#search_results .cloudsearch_result_icon {
+  display: none;
+}
+
+#search_results .cloudsearch_result_snippet {
+  padding-left: 0;
+}
+
+#search_results .cloudsearch_result_meta_line {
+  padding-left: 0;
+}
+
+#search_results .cloudsearch_result_count_container {
+  padding-left: 0;
+}
+
+#facet_results .cloudsearch_facet_result_operator_name {
+  font-weight: bold;
+}
+
+#facet_results .cloudsearch_facet_bucket_value {
+  margin-left: 8px;
+}
+
+#app {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#search_bar {
+  flex: 0 0 100%;
+}
+
+#facet_results {
+ width: 25%;
+ display:block;
+  float:left;
+}
+
+#search_results {
+  float:right;
+  width: 70%;
+  display:block;
+}
+
+.Heading {
+font-family: "Times New Roman", Times, serif;
+font-size: 50px;
+color: #440066;
+padding-top: 100px;
+height: 300px;
+width: 1000px;
+}
+.Heading2 {
+font-family: "Times New Roman", Times, serif;
+font-size: 50px;
+color: #440066;
+}
+
+#questions {
+padding-left: 30%;
+}

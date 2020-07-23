@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>COVID-19 Research Papers</title>
+    <meta charset='utf-8' />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="//cdn.rawgit.com/necolas/normalize.css/master/normalize.css">
+    <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">
+    <link rel="stylesheet" href="stylesheets/app.css">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  </head>
+  <body style="background-color:#ffffff;">
+
+
+  <lottie-player id="covidAnimation" src="https://assets9.lottiefiles.com/datafiles/dNJ1QgOiCpNbFKD/data.json"  background="transparent"  speed="0.05"  style="width: 300px; height: 300px; float:left;"  loop  autoplay></lottie-player>
+    <!-- [START cloud_search_tutorial_html] -->
+
+    <h1 class="Heading" style="text-align: center; float:right">COVID-19 Research Papers</h1>
+    <div class="content">
+      <div id="app" hidden>
+        <div id="header">
+          <button id="sign-out">Sign-out</button>
+        </div>
+        <!-- Markup for widget...-->
+        <!-- [START_EXCLUDE silent] -->
+        <!-- [START cloud_search_tutorial_search_html] -->
+        <div id="search_bar">
+          <div>
+            <div id="suggestions_anchor">
+              <input type="text" id="search_input" placeholder="Search for...">
+            </div>
+          </div>
+        </div>
+        <div id="facet_results" ></div>
+        <div id="search_results" ></div>
+        <!-- [END cloud_search_tutorial_search_html] -->
+        <!-- [END_EXCLUDE] -->
+      </div>
+      <div id="welcome" hidden>
+        <b><h1 style="color: #440066; font-family: 'Times New Roman', Times, serif;">COVID Research Papers Search</h1></b>
+        <p>Sign in with your Google CloudSearch Oreo account to search.</p>
+        <button id="sign-in">Sign-in</button>
+      </div>
+    </div>
+  <div  id="questions" float="right">
+   <h1 class="Heading2" float="right">Sample Questions</h1>
+    <ul float="right">
+      <li>What is the best drug for COVID-19?</li>
+      <li>What are the symptoms of COVID-19?</li>
+      <li></li>
+    </ul>
+  </div>
+
+    <script src="javascripts/app.js"></script>
+    <!-- [START cloud_search_tutorial_script_loader] -->
+    <script src="https://apis.google.com/js/api.js?mods=enable_cloud_search_widget&onload=onLoad" async defer></script>
+    <!-- [END cloud_search_tutorial_script_loader] -->
+
+  </body>
+</html>
