@@ -1,0 +1,95 @@
+cachexia
+Fever
+Tiredness
+Sore throat
+Dry cough
+loss of appetite
+loss of taste
+Loss of smell
+weight loss
+weight gain
+dry mouth
+fatigue
+malaise
+asthenia
+muscle weakness
+pyrexia
+jaundice
+pain
+abdominal pain
+chest pain
+dyspareunia
+vaginismus
+bruising
+epistaxis
+tremor
+convulsions
+muscle cramps
+paralysis
+tinnitus
+dizziness
+vertigo
+syncope
+fecal incontinence
+cataplexy
+hypothermia
+hyperthermia
+anxiety
+ataxia
+catatonia
+dysarthria
+somnolence
+insomnia
+amaurosis fugax
+amaurosis
+blurred vision
+double vision
+mydriasis/miosis
+nystagmus
+anorexia
+Headache
+Bluish lips
+bloating
+belching
+blood in stool
+melena
+hematochezia
+constipation
+diarrhea
+dysphagia
+dyspepsia
+flatulence
+nausea
+pyrosis
+vomiting
+chest pain
+claudication
+palpitation
+tachycardia
+bradycardia
+arrhythmia
+reticulocytosis
+macrocytosis
+dysuria
+polyuria
+hematuria
+urinary frequency
+urinary incontinence
+impotence
+hypoventilation
+hyperventilation
+bradypnea
+apnea
+cough
+dyspnea
+hemoptysis
+pleuritic chest pain
+sputum production
+tachypnea
+rash
+itching
+edema
+anasarca
+blister
+urticaria
+paresthesia
