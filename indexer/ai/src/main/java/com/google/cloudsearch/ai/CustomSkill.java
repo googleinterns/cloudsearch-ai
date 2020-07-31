@@ -1,7 +1,6 @@
 package com.google.cloudsearch.ai;
 
 import com.google.cloudsearch.exceptions.InvalidConfigException;
-import com.google.cloudsearch.exceptions.InvalidResponseException;
 import com.google.common.collect.Multimap;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -21,7 +20,8 @@ import org.apache.log4j.Logger;
 public class CustomSkill extends BaseAISkill {
 
     private JSONObject input = new JSONObject();
-    private String url = "";
+    private String cloudFunctionURL = "";
+    HttpURLConnection connection;
     private Logger log = Logger.getLogger(StandardSkillCategoryExtraction.class.getName());
 
   /**
@@ -63,8 +63,9 @@ public class CustomSkill extends BaseAISkill {
         if(input == null) {
             setInputs(new JSONObject());
         }
-        else
+        else {
             setInputs(input);
+        }
     }
 
     /**
@@ -100,7 +101,7 @@ public class CustomSkill extends BaseAISkill {
      * @param url   URL for invoking the Cloud Function.
      */
     public void setURL(String url) {
-        this.url = url;
+        this.cloudFunctionURL = url;
     }
 
     /**
@@ -108,7 +109,7 @@ public class CustomSkill extends BaseAISkill {
      * @return
      */
     public String getURL() {
-        return this.url;
+        return this.cloudFunctionURL;
     }
 
     /**
@@ -127,10 +128,17 @@ public class CustomSkill extends BaseAISkill {
     }
 
     /**
-     *  No specific setup required.
+     *  SetUp the connection with the cloud function
      */
     @Override
-    public void setupSkill() {}
+    public void setupSkill() throws IOException {
+        URL cloudFunction = new URL(this.getURL());
+        connection = (HttpURLConnection) cloudFunction.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("content-type", "application/json");
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setDoOutput(true);
+    }
 
     /**
      * Execute the Cloud Function.
@@ -142,17 +150,13 @@ public class CustomSkill extends BaseAISkill {
     @Override
     public void executeSkill(String contentOrURI, Multimap<String, Object> structuredData) {
         try {
+            if(connection != null) {
+                throw new IllegalStateException("Connection for Cloud Function not initialized. Call setupSkill() before calling executeSkill().");
+            }
             //Data (Content or URI) is the first parameter of the input JSON
             JSONObject obj = getInputs();
             obj.put("data", contentOrURI);
             this.setInputs(obj);
-
-            URL cloudFunction = new URL(this.getURL());
-            HttpURLConnection connection = (HttpURLConnection) cloudFunction.openConnection();
-            connection.setRequestMethod("POST");
-            connection.setRequestProperty("content-type", "application/json");
-            connection.setRequestProperty("Accept", "application/json");
-            connection.setDoOutput(true);
 
             String jsonInputString = this.input.toJSONString();
             try(OutputStream os = connection.getOutputStream()) {
@@ -169,32 +173,31 @@ public class CustomSkill extends BaseAISkill {
                 }
                 JSONParser parser = new JSONParser();
                 JSONObject res;
-                try {
-                    res =  (JSONObject) parser.parse(response.toString());
-                    for(OutputMapping outputMap : getOutputMappings()) {
-                        if(res.get(outputMap.getSkillOutputField()) == null)
-                            continue;
-                        String property = outputMap.getPropertyName().split("\\.")[1];
-                        for(Object element : (JSONArray)res.get(outputMap.getSkillOutputField())) {
-                            structuredData.put(property, element);
-                        }
+                res =  (JSONObject) parser.parse(response.toString());
+                for(OutputMapping outputMap : getOutputMappings()) {
+                    if(res.get(outputMap.getSkillOutputField()) == null)
+                        continue;
+                    String property = outputMap.getPropertyName().split("\\.")[1];
+                    for(Object element : (JSONArray)res.get(outputMap.getSkillOutputField())) {
+                        structuredData.put(property, element);
                     }
                 }
-                catch(Exception e) {
-                    throw new InvalidResponseException("Invalid Response from CloudFunction " + getAISkillName());
-                }
             }
-
-        } catch (IOException | InvalidResponseException e) {
+        }
+        catch (IOException | IllegalStateException e) {
+            log.error(e);
+        }
+        catch (Exception e) {
+            log.info("Invalid Response from CloudFunction " + getAISkillName());
             log.error(e);
         }
     }
 
     /**
-     * No Specific Shut Down required.
+     * Disconnect the connection with the cloud function.
      */
     @Override
     public void shutdownSkill() {
-
+        connection.disconnect();
     }
 }

@@ -1,0 +1,16 @@
+{
+  "aiSkillSet" : [
+    {
+        "aiSkillName" : "CloudSearch.CustomAISkills.functionXYZ",
+      "filters" : {
+        "confidence" : "abc"
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "sample.property",
+          "outputField" : "random"
+        }
+      ]
+    }
+  ]
+}

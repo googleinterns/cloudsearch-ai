@@ -1,0 +1,16 @@
+{
+  "aiSkillSet" : [
+    {
+      "aiSkillName" : "CloudSearch.StandardAISkills.CategoryExtraction",
+      "filters" : {
+        "randomFilter" : 0.5
+      },
+      "outputMappings" : [
+        {
+          "targetProperty" : "sample.property",
+          "outputField" : "category"
+        }
+      ]
+    }
+  ]
+}

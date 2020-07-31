@@ -1,13 +1,10 @@
 package com.google.cloudsearch.ai;
 
-import com.google.cloudsearch.ai.AISkill;
-import com.google.cloudsearch.ai.AISkillSet;
 import com.google.common.collect.Multimap;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.List;
 import org.apache.log4j.Logger;
 
@@ -27,12 +24,10 @@ public class AISkillDriver {
      */
     public static void initialize(String aiConfigName, String schemaName) throws Exception {
         JSONParser parser = new JSONParser();
-        JSONObject aiConfig = null;
-        JSONObject schema = null;
-        schema = (JSONObject) parser.parse(new FileReader(schemaName));
-        aiConfig = (JSONObject) parser.parse(new FileReader(aiConfigName));
+        JSONObject schema = (JSONObject) parser.parse(new FileReader(schemaName));
+        JSONObject aiConfig = (JSONObject) parser.parse(new FileReader(aiConfigName));
         skillSet = new AISkillSet(aiConfig, schema);
-        for(AISkill skill : skillSet.getSkillSet()) {
+        for(AISkill skill : skillSet.getSkills()) {
             skill.setupSkill();
         }
     }
@@ -42,31 +37,28 @@ public class AISkillDriver {
      * @param structuredData    Multimap for storing the structured data.
      * @param contentOrURI      CloudStorage URI or File content in String format.
      */
-    public static void populateStructuredData(String contentOrURI, Multimap<String, Object> structuredData) throws NullPointerException {
-        try {
-            List<AISkill> skillList = (List<AISkill>) skillSet.getSkillSet();
-            for(AISkill skill : skillList) {
-                skill.executeSkill(contentOrURI, structuredData);
-            }
+    public static void populateStructuredData(String contentOrURI, Multimap<String, Object> structuredData) {
+        List<AISkill> skillList = (List<AISkill>) skillSet.getSkills();
+        if(skillList == null) {
+            log.error("No skills Specified. Initialize the driver before calling populateStructuredData.");
+            return;
         }
-        catch (NullPointerException e) {
-            throw new NullPointerException("AISkill List is not initialized. Call AISkillDriver.initialize() before calling populateStructuredData()");
-        }
+        skillList.forEach(skill -> {
+            skill.executeSkill(contentOrURI, structuredData);
+        });
     }
 
     /**
      * Handles skill shutdown.
      */
     public static void closeSkillDriver() throws NullPointerException {
-        try {
-            List<AISkill> skillList = (List<AISkill>) skillSet.getSkillSet();
-            for(AISkill skill : skillList) {
-                skill.shutdownSkill();
-            }
+        List<AISkill> skillList = (List<AISkill>) skillSet.getSkills();
+        if(skillList == null) {
+            log.error("AISkill List is not initialized. Call AISkillDriver.initialize() before calling closeSkillDriver()");
+            return;
         }
-        catch (NullPointerException e) {
-            throw new NullPointerException("AISkill List is not initialized. Call AISkillDriver.initialize() before calling closeSkillDriver()");
-
-        }
+        skillList.forEach(skill -> {
+            skill.shutdownSkill();
+        });
     }
 }

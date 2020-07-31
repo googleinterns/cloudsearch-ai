@@ -1,0 +1,13 @@
+{
+  "aiSkillSet" : [
+    {
+      "aiSkillName" : "",
+      "outputMappings" : [
+        {
+          "targetProperty" : "sample.property",
+          "outputField" : "sentiment"
+        }
+      ]
+    }
+  ]
+}
